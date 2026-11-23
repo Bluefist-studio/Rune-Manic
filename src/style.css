@@ -10,6 +10,8 @@
 
 * { box-sizing: border-box; }
 body { margin: 0; min-width: 760px; }
+body, dialog { -webkit-user-select: none; user-select: none; }
+input, textarea { -webkit-user-select: text; user-select: text; }
 button { font: inherit; }
 button:focus-visible { outline: 2px solid #f6d395; outline-offset: 3px; }
 button:disabled { opacity: .38; cursor: not-allowed; }
@@ -104,6 +106,8 @@ h2 { font-size: 18px; color: #f4e9d3; }
 }
 .slot:hover { border-color: #b6a77d; background: #273a37; }
 .slot.occupied { justify-content: flex-start; }
+.slot.occupied[draggable="true"] { cursor: grab; }
+.slot.occupied[draggable="true"]:active { cursor: grabbing; }
 .slot.slot-hidden { visibility: hidden; }
 .slot.legal { border: 1px solid #e8c278; box-shadow: 0 0 16px #e1b87058, inset 0 0 0 1px #e8c278, inset 0 0 18px #e1b87029; }
 .slot.selected, .hand-card.selected { outline: 2px solid #f3d599; outline-offset: 2px; }
