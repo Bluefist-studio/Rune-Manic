@@ -1,0 +1,323 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Rune Manic - Prototype</title>
+  <link rel="icon" type="image/png" href="favicon.png">
+  <link rel="stylesheet" href="src/style.css">
+</head>
+<body>
+  <main id="game">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">RUNE MANIC PROTOTYPE</p>
+        <h1>Rune Manic</h1>
+      </div>
+      <div id="turn-display" class="turn-display">
+        <span id="turn-label"></span>
+        <strong id="player-label"></strong>
+      </div>
+      <button id="open-menu" class="button secondary" type="button">Menu</button>
+    </header>
+
+    <div id="game-layout" class="layout">
+      <aside class="help-sidebar">
+        <section class="panel history-panel" aria-labelledby="history-title">
+          <h2 id="history-title">Action history</h2>
+          <div id="history-scroll" class="history-scroll" tabindex="0" aria-label="Action history, scroll for earlier actions">
+            <ol id="action-history" role="log" aria-live="polite" aria-relevant="additions"></ol>
+          </div>
+          <p id="history-empty">Actions and dice rolls will appear here.</p>
+          <button id="download-ai-log" class="button secondary history-download" type="button" hidden>Download AI log</button>
+          <p id="ai-log-status" role="status"></p>
+          <p id="learning-match-status" role="status" hidden></p>
+          <button id="learning-retry" class="button secondary history-download" type="button" hidden>Retry saving learning</button>
+          <button id="learning-pending-export" class="button secondary history-download" type="button" hidden>Export pending learning</button>
+          <button id="learning-discard" class="button secondary history-download" type="button" hidden>Discard pending learning</button>
+        </section>
+      </aside>
+      <section id="battlefield" class="table" aria-label="Battlefield and hand">
+        <div id="rune-board" class="rune-board">
+          <svg id="effect-links" class="effect-links" aria-hidden="true"></svg>
+          <div id="action-wheel" class="action-wheel" role="group" aria-label="Rune actions" hidden>
+            <button id="wheel-move" class="wheel-option wheel-move" type="button">Move</button>
+            <button id="wheel-attack" class="wheel-option wheel-attack" type="button">Attack</button>
+            <button id="wheel-attribute" class="wheel-option wheel-attribute" type="button">Attribute</button>
+            <button id="wheel-cancel" class="wheel-cancel" type="button" aria-label="Cancel selection">×</button>
+          </div>
+          <div class="board-heading"><span id="opponent-label"></span><span id="opponent-hand-count" aria-live="polite" aria-atomic="true"></span></div>
+          <div id="opponent-back" class="row" aria-label="Opponent backline"></div>
+          <div id="opponent-front" class="row" aria-label="Opponent frontline"></div>
+          <div id="center-line" class="center-line"><span>FRONTLINE</span><strong id="board-turn" aria-live="polite"></strong><span>FRONTLINE</span></div>
+          <div id="player-front" class="row" aria-label="Your frontline"></div>
+          <div id="player-back" class="row" aria-label="Your backline"></div>
+        </div>
+
+        <section class="hand-panel" aria-label="Your hand">
+          <div class="hand-heading">
+            <div><span class="eyebrow">YOUR RUNES</span><h2>Hand <span id="hand-count"></span></h2></div>
+            <button id="hand-order" class="button secondary" type="button" aria-label="Hand sorted by rank; switch to color" title="Multicolor runes are grouped by their full color combination.">Sort: Rank</button>
+          </div>
+          <div id="hand" class="hand"></div>
+        </section>
+      </section>
+
+      <aside class="sidebar">
+        <section class="panel command-panel">
+          <button id="open-help" class="button secondary help-button" type="button" aria-label="How to play" title="How to play">?</button>
+          <div id="controls">
+            <p id="command-turn" class="eyebrow">YOUR TURN</p>
+            <h2 id="command-title">Make your move</h2>
+            <p id="message" aria-live="polite"></p>
+            <p id="no-progress"></p>
+            <div class="action-buttons">
+              <button id="move" class="button secondary" type="button">Move / swap</button>
+              <button id="attack" class="button secondary" type="button">Attack</button>
+              <button id="attribute" class="button secondary" type="button">Use attribute</button>
+              <button id="cancel" class="button secondary" type="button">Cancel selection</button>
+            </div>
+            <button id="trade-undo" class="button secondary trade-undo" type="button" hidden>Undo last target</button>
+            <button id="end-turn" class="button primary" type="button">End turn</button>
+            <button id="next-round" class="button primary" type="button" hidden>Play next round</button>
+            <div class="game-actions">
+              <button id="offer-draw" class="button secondary" type="button" disabled>Offer draw</button>
+              <button id="concede" class="button secondary" type="button" disabled>Concede</button>
+            </div>
+          </div>
+        </section>
+        <section id="inspect-panel" class="panel inspect-panel">
+          <p class="eyebrow">RUNE DETAILS</p>
+          <div id="details"><p>Select a rune to inspect it.</p></div>
+        </section>
+      </aside>
+    </div>
+  </main>
+
+  <div id="feedback-stage" class="feedback-stage" role="status" aria-live="polite" aria-atomic="true" hidden></div>
+  <div id="handoff" class="handoff" hidden>
+    <div class="handoff-card">
+      <p class="eyebrow">PASS THE DEVICE</p>
+      <p id="handoff-previous" class="handoff-previous"></p>
+      <h2 id="handoff-title"></h2>
+      <p>The previous player should look away before the next hand is revealed.</p>
+      <button id="ready" class="button primary" type="button">I'm ready</button>
+    </div>
+  </div>
+  <div id="draw-offer" class="handoff" role="dialog" aria-modal="true" aria-labelledby="draw-offer-title" hidden>
+    <div class="handoff-card">
+      <p class="eyebrow">DRAW OFFER</p>
+      <h2 id="draw-offer-title"></h2>
+      <p id="draw-offer-message"></p>
+      <button id="draw-offer-ready" class="button primary" type="button">I'm ready</button>
+      <div id="draw-offer-response" class="menu-actions" hidden>
+        <button id="draw-accept" class="button primary" type="button">Accept draw</button>
+        <button id="draw-decline" class="button secondary" type="button">Decline draw</button>
+      </div>
+    </div>
+  </div>
+  <div id="focus-choice" class="handoff" role="dialog" aria-modal="true" aria-labelledby="focus-title" aria-describedby="focus-instructions" hidden>
+    <div class="handoff-card focus-card">
+      <p class="eyebrow">START OF TURN</p>
+      <h2 id="focus-title"></h2>
+      <p id="focus-instructions">Choose one friendly rune's attribute or none. This does not use Focus's action.</p>
+      <div id="focus-options" class="focus-options"></div>
+      <button id="focus-concede" class="button secondary" type="button">Concede</button>
+    </div>
+  </div>
+  <dialog id="concede-dialog" aria-labelledby="concede-title" aria-describedby="concede-message">
+    <div class="masterful-card">
+      <h2 id="concede-title">Concede the game?</h2>
+      <p id="concede-message"></p>
+      <button id="concede-cancel" class="button secondary" type="button" autofocus>Keep playing</button>
+      <button id="concede-confirm" class="button primary" type="button">Concede</button>
+    </div>
+  </dialog>
+  <dialog id="confirm-draw-dialog" aria-labelledby="confirm-draw-title" aria-describedby="confirm-draw-message">
+    <div class="masterful-card">
+      <h2 id="confirm-draw-title">Offer a draw?</h2>
+      <p id="confirm-draw-message">The opponent can accept or decline your offer.</p>
+      <button id="confirm-draw-cancel" class="button secondary" type="button" autofocus>Keep playing</button>
+      <button id="confirm-draw" class="button primary" type="button">Offer draw</button>
+    </div>
+  </dialog>
+  <dialog id="trade-dialog" aria-labelledby="trade-title" aria-describedby="trade-instructions">
+    <div class="masterful-card">
+      <h2 id="trade-title">Trade hit points</h2>
+      <p id="trade-instructions">Choose how many hit points to trade for damage. Trading the last hit point destroys this rune.</p>
+      <div id="trade-options" class="masterful-options" aria-label="Hit points to trade"></div>
+      <button id="trade-cancel" class="button secondary" type="button">Cancel</button>
+    </div>
+  </dialog>
+  <dialog id="help-dialog" aria-labelledby="help-title">
+    <div class="rune-info">
+      <header class="rune-info-header">
+        <div>
+          <p class="eyebrow">RUNE MANIC</p>
+          <h2 id="help-title">How to play</h2>
+        </div>
+        <button id="help-close" class="button secondary" type="button" autofocus>Close</button>
+      </header>
+      <div class="rune-info-content help-content">
+        <p>Select or drag a rank 1 card to a glowing space. Select or drag a higher-rank card to a glowing rune to upgrade it.</p>
+        <p>Use Sort to organize the hand by color or rank. Color sorting groups multicolor runes by their full color combination and orders each group by rank.</p>
+        <p>Select one of your runes, then choose Move, Attack or Attribute from its action wheel or the sidebar buttons. Each rune can move once and act once per turn. <span id="new-rune-action-rule"></span></p>
+        <p>Right-click the game to cancel your current selection.</p>
+        <p>On your runes, ○ means available and ✓ means already used this turn.</p>
+        <p>Hover over or focus a target to see an arrow: red for attacks and gold for attributes. Selected multi-target runes stay linked until the action resolves.</p>
+        <p>Dashed violet arrows show Spectral disabling; solid teal arrows show Amplifying. Arrows point from the source to its target. Select a rune for details.</p>
+        <p>A backline rune needs a frontline rune directly ahead. A player with no runes in play loses; if both lose their last runes together, the round is a draw. A locked Spectral stalemate can also draw the round.</p>
+        <p>Four consecutive turns without meaningful progress draw the round. Playing, upgrading, damaging, healing or destroying a rune, or changing an attribute status, resets the count; movement alone does not.</p>
+        <p>During your turn, offer a draw for the opponent to accept or decline. The AI considers the current board position and declines until both players have completed a turn.</p>
+        <p>Occupied columns group together visually. Empty positions appear while moving a rune, or when they are valid places to play a selected card. A rune entering an empty frontline position stays on the selected side as the group re-centers. With three frontline runes, Frontline 5 offers another way to place the fourth rune on the right. It uses the same empty position as the left-hand choice; the four-rune limit still applies. Position labels refer to the original battlefield slots, and each backline stays behind its matching frontline.</p>
+      </div>
+    </div>
+  </dialog>
+  <dialog id="victory-dialog" aria-labelledby="victory-title">
+    <div class="victory-card">
+      <p id="victory-label" class="eyebrow">VICTORY</p>
+      <h2 id="victory-title"></h2>
+      <p id="victory-message">The battle is over.</p>
+      <div class="victory-actions">
+        <button id="victory-next-round" class="button primary" type="button" hidden>Play next round</button>
+        <button id="victory-new-game" class="button primary" type="button">New game</button>
+        <button id="victory-close" class="button secondary" type="button" autofocus>View battlefield</button>
+      </div>
+    </div>
+  </dialog>
+  <dialog id="menu-dialog" aria-labelledby="menu-title">
+    <div class="menu-card">
+      <p class="eyebrow">RUNE MANIC</p>
+      <h2 id="menu-title">Main menu</h2>
+      <p>Choose a game or build a deck to save for later.</p>
+      <div class="menu-actions">
+        <button id="menu-new-game" class="button primary" type="button">New game</button>
+        <button id="menu-build-deck" class="button secondary" type="button">Build a deck</button>
+        <button id="menu-learning" class="button secondary" type="button">Learning AI settings</button>
+        <button id="menu-resume" class="button secondary" type="button" hidden>Resume game</button>
+      </div>
+      <p id="menu-storage-status" class="form-status" role="status"></p>
+    </div>
+  </dialog>
+  <dialog id="setup-dialog" aria-labelledby="setup-title">
+    <div class="menu-card setup-card">
+      <header class="deck-header">
+        <div><p class="eyebrow">NEW GAME</p><h2 id="setup-title">Choose your game</h2></div>
+        <button id="setup-back" class="button secondary" type="button">Back</button>
+      </header>
+      <p>Game mode</p>
+      <div class="mode-options">
+        <button id="mode-local" class="button secondary mode-selected" type="button" aria-pressed="true">Local two-player</button>
+        <button id="mode-ai" class="button secondary" type="button" aria-pressed="false">Play against AI</button>
+      </div>
+      <label id="ai-difficulty-label" class="setup-difficulty" hidden>AI difficulty
+        <select id="ai-difficulty"><option value="basic">Basic</option><option value="learning">Learning (experimental)</option></select>
+      </label>
+      <p id="learning-setup-status" role="status" hidden></p>
+      <label class="setup-difficulty" for="starting-player">Who goes first?
+        <select id="starting-player">
+          <option value="0">Player 1</option>
+          <option id="starting-player-2" value="1">Player 2</option>
+          <option value="random" selected>Random</option>
+        </select>
+      </label>
+      <div class="setup-decks">
+        <div>
+          <label for="setup-deck-0">Player 1 deck</label>
+          <select id="setup-deck-0"></select>
+          <p id="setup-summary-0"></p>
+          <button id="setup-edit-0" class="button secondary" type="button">Build / edit Player 1 deck</button>
+          <button id="setup-generate-0" class="button secondary" type="button">Generate random deck</button>
+        </div>
+        <div>
+          <label id="setup-deck-label-1" for="setup-deck-1">Player 2 deck</label>
+          <select id="setup-deck-1"></select>
+          <p id="setup-summary-1"></p>
+          <button id="setup-edit-1" class="button secondary" type="button">Build / edit Player 2 deck</button>
+          <button id="setup-generate-1" class="button secondary" type="button">Generate random deck</button>
+        </div>
+      </div>
+      <p id="setup-status" class="form-status" role="status"></p>
+      <div id="setup-previous-ai-log" class="setup-previous-log" hidden>
+        <p>Starting a new game replaces the current AI log. Download it first if you want to keep it.</p>
+        <button id="setup-download-ai-log" class="button secondary" type="button">Download current AI log</button>
+        <p id="setup-ai-log-status" role="status"></p>
+      </div>
+      <button id="setup-start" class="button primary" type="button">Start local game</button>
+    </div>
+  </dialog>
+  <dialog id="learning-dialog" aria-labelledby="learning-title">
+    <div class="menu-card">
+      <header class="deck-header">
+        <div><p class="eyebrow">EXPERIMENTAL DIFFICULTY</p><h2 id="learning-title">Learning AI</h2></div>
+        <button id="learning-close" class="button secondary" type="button">Back</button>
+      </header>
+      <p>Learning updates after completed games against this difficulty. It may explore different moves and will not necessarily improve every game.</p>
+      <p id="learning-progress"></p>
+      <label class="setup-difficulty" for="snapshot-name">Saved opponent name</label>
+      <input id="snapshot-name" type="text" maxlength="80" placeholder="Level 30">
+      <button id="snapshot-save" class="button secondary" type="button">Save current AI as opponent</button>
+      <p id="snapshot-list"></p>
+      <div class="menu-actions">
+        <button id="learning-export" class="button secondary" type="button">Export learning data</button>
+        <button id="learning-import" class="button secondary" type="button">Import learning data</button>
+        <input id="learning-import-file" type="file" accept=".json,application/json" hidden>
+        <button id="learning-reset" class="button secondary" type="button">Reset learning data</button>
+      </div>
+      <p id="learning-status" class="form-status" role="status"></p>
+    </div>
+  </dialog>
+  <dialog id="rune-info-dialog" aria-labelledby="rune-info-title">
+    <div class="rune-info">
+      <header class="rune-info-header">
+        <div>
+          <p class="eyebrow">RUNE RULINGS</p>
+          <h2 id="rune-info-title"></h2>
+        </div>
+        <button id="rune-info-close" class="button secondary" type="button" autofocus>Close</button>
+      </header>
+      <div id="rune-info-content" class="rune-info-content"></div>
+    </div>
+  </dialog>
+  <dialog id="deck-dialog" aria-labelledby="deck-title" aria-describedby="deck-instructions">
+    <div class="deck-editor">
+      <header class="deck-header">
+        <div>
+          <p class="eyebrow">DECK BUILDER</p>
+          <h2 id="deck-title">Build a deck</h2>
+        </div>
+        <button id="deck-close" class="button secondary" type="button">Cancel</button>
+      </header>
+      <p id="deck-instructions">Each deck needs a rank 1 rune and can total up to 24 ranks. Multiple copies are allowed.</p>
+      <div class="deck-players">
+        <label for="deck-load">Start from</label>
+        <select id="deck-load"></select>
+        <button id="deck-clear" class="button secondary" type="button">Clear deck</button>
+        <button id="deck-generate" class="button secondary" type="button">Generate random deck</button>
+      </div>
+      <p id="deck-status" aria-live="polite"></p>
+      <details id="deck-text-section" class="deck-text">
+        <summary>Import / export text deck list</summary>
+        <label for="deck-text">Copy the current list or paste a list to import. Use one card per line, for example: 2x Mending.</label>
+        <textarea id="deck-text" rows="4" spellcheck="false" placeholder="2x Mending&#10;1x Fire"></textarea>
+        <div class="deck-text-actions">
+          <button id="deck-copy" class="button secondary" type="button">Copy deck list</button>
+          <button id="deck-import" class="button secondary" type="button">Import pasted list</button>
+        </div>
+        <p id="deck-text-status" role="status"></p>
+      </details>
+      <div id="deck-cards" class="deck-cards"></div>
+      <footer class="deck-footer">
+        <div class="deck-save">
+          <label for="deck-name">Deck name</label>
+          <input id="deck-name" type="text" maxlength="60" placeholder="Name your deck">
+          <button id="deck-save" class="button secondary" type="button">Save deck</button>
+        </div>
+        <button id="deck-use" class="button primary" type="button">Use this deck</button>
+      </footer>
+      <p id="deck-validation" aria-live="polite"></p>
+    </div>
+  </dialog>
+  <script defer src="dist/app.js"></script>
+</body>
+</html>
