@@ -62,7 +62,7 @@
       rank: 1,
       colors: ["orange", "purple"],
       attribute: "mending",
-      attributeText: "Restore 1 hit point on any rune",
+      attributeText: "Restore 1 hit point on a friendly rune",
       image: "Cards online/RM_Card_O1 Mending3.png"
     },
     deflecting: {
@@ -495,12 +495,10 @@
       }
       if (rune.acted) continue;
       if (attribute === "mending") {
-        for (let targetPlayer = 0; targetPlayer < game2.players.length; targetPlayer++) {
-          for (let targetSlot = 0; targetSlot < SLOT_COUNT; targetSlot++) {
-            const target = game2.players[targetPlayer].slots[targetSlot];
-            if (target && target.damage > 0) {
-              actions.push({ type: "attribute", slot, targetPlayer, targetSlot });
-            }
+        for (let targetSlot = 0; targetSlot < SLOT_COUNT; targetSlot++) {
+          const target = player.slots[targetSlot];
+          if (target && target.damage > 0) {
+            actions.push({ type: "attribute", slot, targetPlayer: game2.currentPlayer, targetSlot });
           }
         }
       }
@@ -1175,13 +1173,13 @@
     [["brawling", "uprising"], "Uprising counts only its owner's visible Brawling runes. Brawling underneath an upgrade does not count, and Focus copying Brawling is not a Brawling card."],
     [["fortitude"], "The health bonus and attack penalty remain in effect while defending, including when disabled."],
     [["piercing-major"], "Piercing Major also gains +1 attack, except that defending Intangible ignores this bonus."],
-    [["mending"], "Mending uses an action to restore 1 damage to any damaged rune, including itself, a rune in either player's backline, or Intangible. It cannot target an undamaged rune or restore lost temporary health."],
+    [["mending"], "Mending uses an action to restore 1 damage to a damaged friendly rune, including itself, a friendly rune in the backline, or friendly Intangible. It cannot target an opponent's rune or an undamaged rune, or restore lost temporary health."],
     [["powerful"], "Powerful damages the rune originally behind its target before that rune moves forward, even if Powerful or its target is destroyed in combat."],
     [["haunting"], "Haunting curses a surviving rune that destroys it through combat or an attribute, whether Haunting was attacking or defending. The -1 attack penalty remains through upgrades and is not cumulative."],
     [["fire", "magma"], "Fire and Magma target only enemy runes, including those in the backline. If Fire destroys both players' last runes, the round is a draw."],
     [["magma"], "Magma chooses its target before rolling a six-sided die and uses its action even on a failed roll. On 3+ it deals 2 damage."],
     [["intangible", "haunting", "fortitude", "piercing-major", "uprising"], "Defending Intangible ignores positive attack bonuses from the attacker's own attributes, but Haunting's existing penalty and Fortitude's attack penalty still apply. Intangible is immune to Haunting's curse while defending; if it attacks and destroys Haunting, it is cursed."],
-    [["intangible", "fire", "magma", "mending"], "Intangible cannot be selected by enemy attributes that cannot affect it, including Fire and Magma. Mending may heal Intangible."],
+    [["intangible", "fire", "magma", "mending"], "Intangible cannot be selected by enemy attributes that cannot affect it, including Fire and Magma. Mending may heal friendly Intangible."],
     [["intangible", "powerful"], "Powerful still damages the rune behind a defending Intangible. An Intangible behind the target is immune to that extra damage."],
     [["acid", "intangible"], "Acid uses an action to deal 1 damage to three different enemy runes, including backline runes, then destroys its source. It targets all eligible enemies if fewer than three are available. Intangible cannot be selected."],
     [["fire-ball", "intangible"], "Fire Ball uses an action to deal 2 damage to one enemy and 1 damage to up to three other enemies, including backline runes, then destroys its source. Intangible cannot be the main target and is immune to the automatic additional damage."],
@@ -1637,6 +1635,30 @@
       ],
       lastGameId: "447e876fbf865f8ec3a82ead4f4418ff"
     }
+  }, {
+    name: "Level 100",
+    model: {
+      schemaVersion: 1,
+      revision: 100,
+      games: 100,
+      wins: 30,
+      baseline: -0.38634235074515255,
+      weights: [
+        -0.05745560497455945,
+        -0.0066781212773809025,
+        0.008228115279165614,
+        -0.009225371314649265,
+        -0.0743514242835329,
+        -0.04196933897611285,
+        -0.0450443508328316,
+        0.19604048319861184,
+        -0.03315861880107152,
+        -0.014522917363680748,
+        0.029477084141272317,
+        -0.11460244919148962
+      ],
+      lastGameId: "47b53bed1deeec0572073dbd9b69acd1"
+    }
   }];
   function availableLearningOpponents(saved) {
     const options = prebuiltLearningOpponents.map((opponent) => ({
@@ -2039,6 +2061,7 @@
   var editingPlayer = 0;
   var selection = null;
   var draggedCardId = null;
+  var draggedRune = null;
   var handOrder = "rank";
   var visualColumnOrder = [[0, 1, 2, 3], [0, 1, 2, 3]];
   var targetPreview = null;
@@ -2967,15 +2990,26 @@
       );
     }
   }
-  function renderRow(id, playerIndex, start, links) {
+  function renderRow(id, playerIndex, start, links, preservedRune) {
     const row = $(id);
-    row.replaceChildren();
+    const preserved = preservedRune && row.contains(preservedRune) ? preservedRune : null;
+    if (preserved) {
+      for (const child of [...row.children]) {
+        if (child !== preserved) child.remove();
+      }
+    } else {
+      row.replaceChildren();
+    }
     const isMine = playerIndex === viewPlayer();
     const options = selectedActions();
     const slots = game.players[playerIndex].slots;
     for (const column of getBattlefieldColumns(slots, visualColumnOrder[playerIndex])) {
       const slot = start + column.column;
       const rune = game.players[playerIndex].slots[slot];
+      if (preserved && Number(preserved.dataset.slot) === slot) {
+        preserved.classList.add("selected");
+        continue;
+      }
       const disabled = isRuneDisabled(game, playerIndex, slot);
       const button = node("button", "slot");
       button.type = "button";
@@ -3004,6 +3038,24 @@
       if (rune) {
         button.classList.add("occupied");
         const card = rune.stack[rune.stack.length - 1];
+        if (isMine && playerIndex === game.currentPlayer && !isAiTurn() && getLegalActions(game).some((action) => action.type === "move" && action.from === slot)) {
+          button.draggable = true;
+          button.addEventListener("dragstart", (event) => {
+            draggedRune = { player: playerIndex, slot };
+            event.dataTransfer.effectAllowed = "move";
+            event.dataTransfer.setData("text/plain", card.name);
+            selection = { kind: "rune", slot, mode: "move" };
+            targetPreview = null;
+            inspected = { card, rune, playerIndex };
+            message = "Drop on a glowing friendly position to move or swap.";
+            render(false, button);
+          });
+          button.addEventListener("dragend", () => {
+            if (draggedRune?.player !== playerIndex || draggedRune.slot !== slot) return;
+            draggedRune = null;
+            cancelSelection();
+          });
+        }
         const stats = getRuneStats(rune, game.players[playerIndex]);
         const image = artwork(card);
         image.addEventListener("load", () => {
@@ -3053,7 +3105,11 @@
         if (!button.matches(":hover")) clearPreview();
       });
       button.addEventListener("click", () => chooseSlot(playerIndex, slot));
-      row.append(button);
+      if (preserved && column.start < Number(preserved.style.gridColumnStart)) {
+        row.insertBefore(button, preserved);
+      } else {
+        row.append(button);
+      }
     }
     if (start === 0 && isMine && selection?.kind === "hand" && slots.slice(0, 4).filter(Boolean).length === 3) {
       const action = options.find((item) => item.type === "play" && item.slot < 4);
@@ -3211,7 +3267,7 @@
     options.firstElementChild.focus();
     return true;
   }
-  function render(preserveHand = false) {
+  function render(preserveHand = false, preservedRune = null) {
     const current = game.currentPlayer;
     const viewer = viewPlayer();
     const other = 1 - viewer;
@@ -3227,10 +3283,10 @@
     $("message").textContent = message;
     $("no-progress").textContent = `Turns without progress: ${game.noProgressTurns}/${NO_PROGRESS_TURN_LIMIT}`;
     const links = getEffectLinks(game);
-    renderRow("opponent-back", other, 4, links);
-    renderRow("opponent-front", other, 0, links);
-    renderRow("player-front", viewer, 0, links);
-    renderRow("player-back", viewer, 4, links);
+    renderRow("opponent-back", other, 4, links, preservedRune);
+    renderRow("opponent-front", other, 0, links, preservedRune);
+    renderRow("player-front", viewer, 0, links, preservedRune);
+    renderRow("player-back", viewer, 4, links, preservedRune);
     renderEffectLinks(links);
     if (!preserveHand) renderHand();
     renderDetails(links);
@@ -3272,17 +3328,26 @@
   }
   $("battlefield").addEventListener("dragover", (event) => {
     const slot = event.target.closest(".slot.legal");
-    if (!draggedCardId || selection?.kind !== "hand" || selection.cardId !== draggedCardId || !slot || Number(slot.dataset.player) !== game.currentPlayer) return;
+    const draggingHand = draggedCardId && selection?.kind === "hand" && selection.cardId === draggedCardId;
+    const draggingRune = draggedRune && selection?.kind === "rune" && selection.mode === "move" && selection.slot === draggedRune.slot && draggedRune.player === game.currentPlayer;
+    if (!draggingHand && !draggingRune || !slot || Number(slot.dataset.player) !== game.currentPlayer) return;
     event.preventDefault();
     event.dataTransfer.dropEffect = "move";
   });
   $("battlefield").addEventListener("drop", (event) => {
     const slot = event.target.closest(".slot.legal");
-    if (!draggedCardId || selection?.kind !== "hand" || selection.cardId !== draggedCardId || !slot || Number(slot.dataset.player) !== game.currentPlayer) return;
-    const action = selectedActions().find((item) => (item.type === "play" || item.type === "upgrade") && item.slot === Number(slot.dataset.placementSlot ?? slot.dataset.slot));
+    if (!slot || Number(slot.dataset.player) !== game.currentPlayer) return;
+    const destination = Number(slot.dataset.placementSlot ?? slot.dataset.slot);
+    const action = selectedActions().find((item) => {
+      if (draggedCardId && selection?.kind === "hand" && selection.cardId === draggedCardId) {
+        return (item.type === "play" || item.type === "upgrade") && item.slot === destination;
+      }
+      return draggedRune && selection?.kind === "rune" && selection.mode === "move" && selection.slot === draggedRune.slot && draggedRune.player === game.currentPlayer && item.type === "move" && item.to === destination;
+    });
     if (!action) return;
     event.preventDefault();
     draggedCardId = null;
+    draggedRune = null;
     perform(action, null, slot.dataset.placementSide === "right" ? "right" : "left");
   });
   function selectMove() {
@@ -3328,7 +3393,7 @@
     }
     selection.mode = "attribute";
     if (attribute === "mending") {
-      message = "Choose a glowing damaged rune to restore 1 hit point.";
+      message = "Choose a glowing damaged friendly rune to restore 1 hit point.";
     } else if (attribute === "amplifying") {
       message = "Choose another glowing friendly rune to give it +1 attack.";
     } else if (attribute === "spectral") {
@@ -3370,6 +3435,7 @@
   });
   function cancelSelection() {
     draggedCardId = null;
+    draggedRune = null;
     selection = null;
     targetPreview = null;
     inspected = null;
