@@ -1979,6 +1979,16 @@
     const displayed = getBattlefieldColumns(slots, columns).map((item) => item.column);
     return side === "right" ? [...displayed.filter((column) => column !== emptyColumn), emptyColumn] : displayed;
   }
+  function getFrontlineFifthAction(slots, selection2, actions) {
+    if (slots.slice(0, 4).filter(Boolean).length !== 3) return null;
+    if (selection2?.kind === "hand") {
+      return actions.find((action) => action.type === "play" && action.slot < 4) ?? null;
+    }
+    if (selection2?.kind === "rune" && selection2.mode === "move" && selection2.slot >= 4) {
+      return actions.find((action) => action.type === "move" && action.from === selection2.slot && action.to < 4 && !slots[action.to]) ?? null;
+    }
+    return null;
+  }
   function playerName2(player, aiOpponent) {
     return aiOpponent && player === 1 ? "AI" : `Player ${player + 1}`;
   }
@@ -1989,6 +1999,19 @@
     }
     if (selection2.mode !== "attribute") return false;
     return actions.some((action) => action.type === "attribute" && action.targetPlayer === targetPlayer && (action.targetSlot !== void 0 ? action.targetSlot === targetSlot : action.targetSlots?.includes(targetSlot)));
+  }
+  function isActionDamageTarget(game2, action, targetPlayer, targetSlot) {
+    if (action.type === "attack") {
+      const opponent = 1 - game2.currentPlayer;
+      if (targetPlayer !== opponent) return false;
+      if (action.target === targetSlot) return true;
+      const attacker = game2.players[game2.currentPlayer].slots[action.slot];
+      return getRuneAttribute(attacker) === "powerful" && action.target + 4 === targetSlot;
+    }
+    if (action.type === "attribute") {
+      return action.targetPlayer === targetPlayer && (action.targetSlot === targetSlot || action.targetSlots?.includes(targetSlot));
+    }
+    return false;
   }
   function getTargetLinks(selection2, actions, currentPlayer, preview) {
     if (selection2?.kind !== "rune" || !["attack", "attribute"].includes(selection2.mode)) return [];
@@ -2446,7 +2469,7 @@
         const newHealth = getRuneStats(rune, after.players[player]).health;
         const damage = (rune.damage ?? 0) - (previousRune.damage ?? 0) + (previousRune.temporaryHealth ?? 0) - (rune.temporaryHealth ?? 0);
         if (damage <= 0) continue;
-        addDamageFeedback(player, slot, oldHealth, newHealth, damage);
+        addDamageFeedback(player, oldSlot, oldHealth, newHealth, damage);
       }
     }
     for (let player = 0; player < before.players.length; player++) {
@@ -2454,7 +2477,7 @@
         const rune = before.players[player].slots[slot];
         if (!rune || after.players.some((owner) => owner.slots.some((next) => next?.stack[0].id === rune.stack[0].id))) continue;
         const attribute = action.type === "attribute" && player === before.currentPlayer && slot === action.slot ? getRuneAttribute(rune) : null;
-        const targeted = action.type === "attack" || action.type === "attribute" && player === action.targetPlayer && (action.targetSlot === slot || action.targetSlots?.includes(slot));
+        const targeted = isActionDamageTarget(before, action, player, slot);
         const healthCost = attribute === "bolt" || attribute === "masterful";
         if (!targeted && !healthCost) continue;
         const oldHealth = getRuneStats(rune, before.players[player]).health;
@@ -2473,12 +2496,12 @@
     if (typeof cue.animate === "function" && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
       cue.animate([
         { opacity: 0, transform: "translate(-50%, 6px) scale(.9)" },
-        { opacity: 1, transform: "translate(-50%, -2px) scale(1)", offset: 0.18 },
-        { opacity: 1, transform: "translate(-50%, -12px) scale(1)", offset: 0.76 },
+        { opacity: 1, transform: "translate(-50%, -2px) scale(1)", offset: 0.12 },
+        { opacity: 1, transform: "translate(-50%, -12px) scale(1)", offset: 0.82 },
         { opacity: 0, transform: "translate(-50%, -22px) scale(1.08)" }
-      ], { duration: 820, easing: "ease-out" }).onfinish = () => cue.remove();
+      ], { duration: 2e3, easing: "ease-out" }).onfinish = () => cue.remove();
     } else {
-      setTimeout(() => cue.remove(), 820);
+      setTimeout(() => cue.remove(), 2e3);
     }
     setTimeout(() => {
       if (cue.isConnected) cue.textContent = newHealth === 0 ? `-${damage} HP \xB7 OUT` : `-${damage} HP`;
@@ -2956,13 +2979,13 @@
     handoff = resultHandoff;
     handoffAfterDraw = resultHandoffAfterDraw;
     message = resultMessage;
+    showDamageFeedback(previous, result, action);
     animateBoardAction(previous, result, action, () => {
       showVictory();
       scheduleAiTurn();
     });
     recordResult();
     render();
-    showDamageFeedback(previous, result, action);
     if (action.type === "endTurn" && game.winner === null && !handoff) highlightTurn();
     flashActionSlots(previous, action);
     if (game.winner !== null) victoryPending = true;
@@ -3301,19 +3324,21 @@
         row.append(button);
       }
     }
-    if (start === 0 && isMine && selection?.kind === "hand" && slots.slice(0, 4).filter(Boolean).length === 3) {
-      const action = options.find((item) => item.type === "play" && item.slot < 4);
+    if (start === 0 && isMine) {
+      const action = getFrontlineFifthAction(slots, selection, options);
       if (action) {
+        const destination = action.type === "play" ? action.slot : action.to;
+        const verb = action.type === "play" ? "place" : "move";
         const button = node("button", "slot legal");
         button.type = "button";
         button.dataset.player = String(playerIndex);
-        button.dataset.placementSlot = String(action.slot);
+        button.dataset.placementSlot = String(destination);
         button.dataset.placementSide = "right";
         button.style.gridColumn = "9 / span 2";
-        button.setAttribute("aria-label", `Frontline 5: place in ${describeSlot(action.slot)} on the right`);
-        button.title = `Places in ${describeSlot(action.slot)}; the battlefield still holds four runes.`;
+        button.setAttribute("aria-label", `Frontline 5: ${verb} in ${describeSlot(destination)} on the right`);
+        button.title = `${verb === "place" ? "Places a rune" : "Moves the selected rune"} in ${describeSlot(destination)}; the battlefield still holds four runes.`;
         button.append(node("span", "slot-label", "frontline 5"));
-        button.addEventListener("click", () => chooseSlot(playerIndex, action.slot, "right"));
+        button.addEventListener("click", () => chooseSlot(playerIndex, destination, "right"));
         row.append(button);
       }
     }
