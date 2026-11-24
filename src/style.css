@@ -52,6 +52,8 @@ h2 { font-size: 18px; color: #f4e9d3; }
 .effect-link.amplifying { stroke: #7ff1d9; }
 .effect-arrow.spectral { fill: #dbb2fa; }
 .effect-arrow.amplifying { fill: #7ff1d9; }
+.effect-link.focus-copy, .effect-link.focus-preview { stroke: #fff0a8; stroke-width: 4; }
+.effect-arrow.focus-copy, .effect-arrow.focus-preview { fill: #fff0a8; }
 .effect-link.target-attack { stroke: #ff6262; stroke-width: 4; }
 .effect-arrow.target-attack { fill: #ff6262; }
 .effect-link.target-attribute { stroke: #ffd36d; stroke-width: 4; }
@@ -110,9 +112,12 @@ h2 { font-size: 18px; color: #f4e9d3; }
 .slot.occupied[draggable="true"]:active { cursor: grabbing; }
 .slot.slot-hidden { visibility: hidden; }
 .slot.legal { border: 1px solid #e8c278; box-shadow: 0 0 16px #e1b87058, inset 0 0 0 1px #e8c278, inset 0 0 18px #e1b87029; }
+.slot.drag-hover { border-color: #fff0a8; outline: 3px solid #fff0a8; outline-offset: 2px; background: #594d32; box-shadow: 0 0 26px #ffe08db8, inset 0 0 0 2px #fff0a8; z-index: 2; }
 .slot.selected, .hand-card.selected { outline: 2px solid #f3d599; outline-offset: 2px; }
+.slot.focus-target-preview { outline: 3px solid #fff0a8; outline-offset: 3px; box-shadow: 0 0 20px #fff0a880; }
 .slot.animation-origin > * { visibility: hidden; }
-.slot.motion-card { position: fixed; z-index: 8; margin: 0; pointer-events: none; }
+.hand-card.animation-origin > * { visibility: hidden; }
+.slot.motion-card { position: fixed; z-index: 8; margin: 0; border: 0; border-radius: 0; background: transparent; pointer-events: none; }
 .slot.feedback-slot { animation: slot-flash .75s ease-out; }
 @keyframes slot-flash {
   0%, 100% { box-shadow: none; }
@@ -234,11 +239,14 @@ button.hand-card:active { cursor: grabbing; }
 .game-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; margin-top: 12px; }
 .trade-undo { width: 100%; margin-bottom: 12px; }
 .target-count { border-color: #e8c278; }
+.target-damage { color: #ffd1c5; border-color: #e87968; }
+.damage-feedback { position: fixed; z-index: 12; padding: 4px 7px; border: 1px solid #e87968; border-radius: 4px; color: #ffe4dc; background: #351713ed; box-shadow: 0 2px 12px #000b; font-size: 12px; font-weight: 800; white-space: nowrap; pointer-events: none; }
 .inspect-panel { flex: 0 1 auto; min-height: 0; overflow-y: auto; }
 .inspect-panel .card-art { width: 140px; height: 132px; margin: 0 auto 13px; }
 .inspect-panel h3 { margin-bottom: 5px; color: #f3e5c7; font-size: 16px; }
 .detail-rank { margin-bottom: 9px; color: #c1a977; font-size: 10px; letter-spacing: .1em; }
 .detail-stats { margin-top: 8px; color: #ead6a9 !important; }
+.detail-tip { margin-top: 8px; padding: 8px 10px; border-left: 2px solid #c1a977; background: #27342d; color: #ead6a9 !important; }
 .more-info { margin-top: 12px; }
 .help-content p + p { margin-top: 12px; }
 .handoff { position: fixed; inset: 0; z-index: 10; display: grid; place-items: center; background: #080d11; }
@@ -248,13 +256,15 @@ button.hand-card:active { cursor: grabbing; }
 .handoff-card p:not(.eyebrow) { margin-bottom: 22px; color: #bac2b4; font-size: 14px; line-height: 1.5; }
 .handoff-card .handoff-previous { margin-bottom: 0 !important; color: #ead4a6 !important; }
 .focus-card { width: min(650px, 85vw); max-height: 90vh; overflow-y: auto; }
+#focus-choice { place-items: start center; padding: 12px; background: #080d1180; }
+#focus-choice .handoff-card { background: #15221fcc; }
 .focus-options { display: grid; gap: 8px; }
 .focus-option { text-align: left; white-space: normal; }
 #focus-concede { margin-top: 16px; }
 #victory-dialog { width: min(390px, 85vw); max-width: none; padding: 0; border: 1px solid #887751; border-radius: 8px; color: #e8e4d8; background: #15221f; }
 #victory-dialog::backdrop { background: #050a0ddc; }
-#trade-dialog, #concede-dialog, #confirm-draw-dialog { width: min(390px, 85vw); max-width: none; padding: 0; border: 1px solid #887751; border-radius: 8px; color: #e8e4d8; background: #15221f; }
-#trade-dialog::backdrop, #concede-dialog::backdrop, #confirm-draw-dialog::backdrop { background: #050a0ddc; }
+#trade-dialog, #concede-dialog, #confirm-draw-dialog, #ai-draw-response-dialog { width: min(390px, 85vw); max-width: none; padding: 0; border: 1px solid #887751; border-radius: 8px; color: #e8e4d8; background: #15221f; }
+#trade-dialog::backdrop, #concede-dialog::backdrop, #confirm-draw-dialog::backdrop, #ai-draw-response-dialog::backdrop { background: #050a0ddc; }
 .masterful-card { display: grid; gap: 16px; padding: 28px; text-align: center; }
 .masterful-card p { color: #bac2b4; font-size: 13px; line-height: 1.5; }
 .masterful-options { display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; }
@@ -319,6 +329,7 @@ select, .deck-save input, #snapshot-name { min-width: 0; padding: 8px; color: #e
   width: min(1080px, 94vw);
   max-width: none;
   max-height: 92vh;
+  overflow: hidden;
   padding: 0;
   border: 1px solid #887751;
   border-radius: 8px;
@@ -326,7 +337,7 @@ select, .deck-save input, #snapshot-name { min-width: 0; padding: 8px; color: #e
   background: #101a1e;
 }
 #deck-dialog::backdrop { background: #050a0ddc; }
-.deck-editor { display: flex; flex-direction: column; max-height: 92vh; padding: 22px; gap: 12px; }
+.deck-editor { display: flex; flex-direction: column; max-height: calc(92vh - 2px); overflow: hidden; padding: 22px; gap: 12px; }
 .deck-header, .deck-players, .deck-footer { display: flex; align-items: center; gap: 10px; }
 .deck-header > div { flex: 1; }
 .deck-header h2 { margin-top: 5px; font-size: 23px; }
@@ -337,13 +348,13 @@ select, .deck-save input, #snapshot-name { min-width: 0; padding: 8px; color: #e
 .deck-text textarea { display: block; width: 100%; max-height: 120px; margin-top: 8px; padding: 8px; color: #e8e4d8; background: #10191d; border: 1px solid #697363; border-radius: 4px; font: inherit; font-size: 12px; resize: vertical; }
 .deck-text-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
 #deck-text-status:empty { display: none; }
-.deck-cards { display: grid; flex: 1 1 auto; min-height: 0; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 10px; overflow-y: auto; padding: 4px; }
-.deck-card { display: flex; gap: 10px; min-height: 142px; padding: 8px; border: 1px solid #47544a; border-radius: 5px; background: #182529; }
-.deck-card .card-art { flex: 0 0 96px; width: 96px; height: 96px; }
+.deck-cards { display: grid; flex: 1 1 auto; min-height: 0; grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); grid-auto-rows: max-content; align-content: start; gap: 10px; overflow-y: auto; padding: 4px; }
+.deck-card { display: flex; align-items: flex-start; gap: 12px; min-height: 160px; padding: 10px; border: 1px solid #47544a; border-radius: 5px; background: #182529; }
+.deck-card .card-art { flex: 0 0 84px; width: 84px; height: 110px; }
 .deck-card-info { display: flex; flex: 1; flex-direction: column; min-width: 0; gap: 4px; }
 .deck-card-info h3 { color: #f3e5c7; font-size: 14px; }
-.deck-card-info p { color: #bac2b4; font-size: 10px; line-height: 1.35; }
-.deck-card-controls { display: flex; align-items: center; gap: 8px; margin-top: auto; }
+.deck-card-info p { color: #bac2b4; font-size: 10px; line-height: 1.35; overflow-wrap: anywhere; }
+.deck-card-controls { display: flex; align-items: center; gap: 8px; margin-top: auto; flex-shrink: 0; }
 .deck-card-controls button { min-width: 30px; padding: 4px 8px; }
 .deck-card-controls span { min-width: 18px; text-align: center; font-weight: 700; }
 .deck-footer { flex-wrap: wrap; border-top: 1px solid #47544a; padding-top: 12px; }
