@@ -124,8 +124,11 @@ h2 { font-size: 18px; color: #f4e9d3; }
   35% { border: 1px solid #f6d395; box-shadow: 0 0 22px #efc979, inset 0 0 0 1px #f6d395, inset 0 0 22px #efc9798c; }
 }
 .slot-label { font-size: 10px; letter-spacing: .06em; text-transform: uppercase; }
+.card-visual { position: relative; display: block; }
 .card-art { display: block; width: 100%; height: 100%; object-fit: contain; }
-.slot .card-art { flex: 1 1 0; height: 0; min-height: 0; max-height: 130px; padding: 1px; }
+.card-rank { position: absolute; top: 4px; left: 4px; width: clamp(18px, 28%, 40px); aspect-ratio: 1; object-fit: contain; pointer-events: none; }
+.slot .card-visual { flex: 1 1 0; width: 100%; min-height: 0; max-height: 130px; padding: 1px; }
+.slot .card-rank { top: 4px; left: 4px; }
 .slot-effects, .slot-meta {
   display: flex;
   flex-wrap: wrap;
@@ -195,7 +198,7 @@ button.hand-card:hover { border-color: #e0c58f; transform: translateY(-3px); }
 button.hand-card { cursor: grab; }
 button.hand-card:active { cursor: grabbing; }
 .hand-card-under { pointer-events: none; }
-.hand-card .card-art { height: calc(100% - 20px); }
+.hand-card .card-visual { flex: none; width: 100%; height: calc(100% - 20px); }
 .hand-card-name { position: absolute; bottom: 3px; left: 0; width: 100%; overflow: hidden; color: #c3cabe; font-size: 10px; text-overflow: ellipsis; white-space: nowrap; }
 .sidebar { grid-column: 3; grid-row: 1 / -1; display: flex; flex-direction: column; gap: 14px; min-height: 0; overflow-y: auto; }
 .command-panel { position: relative; flex: none; }
@@ -242,7 +245,7 @@ button.hand-card:active { cursor: grabbing; }
 .target-damage { color: #ffd1c5; border-color: #e87968; }
 .damage-feedback { position: fixed; z-index: 12; padding: 4px 7px; border: 1px solid #e87968; border-radius: 4px; color: #ffe4dc; background: #351713ed; box-shadow: 0 2px 12px #000b; font-size: 12px; font-weight: 800; white-space: nowrap; pointer-events: none; }
 .inspect-panel { flex: 0 1 auto; min-height: 0; overflow-y: auto; }
-.inspect-panel .card-art { width: 140px; height: 132px; margin: 0 auto 13px; }
+.inspect-panel .card-visual { width: 140px; height: 132px; margin: 0 auto 13px; }
 .inspect-panel h3 { margin-bottom: 5px; color: #f3e5c7; font-size: 16px; }
 .detail-rank { margin-bottom: 9px; color: #c1a977; font-size: 10px; letter-spacing: .1em; }
 .detail-stats { margin-top: 8px; color: #ead6a9 !important; }
@@ -350,7 +353,7 @@ select, .deck-save input, #snapshot-name { min-width: 0; padding: 8px; color: #e
 #deck-text-status:empty { display: none; }
 .deck-cards { display: grid; flex: 1 1 auto; min-height: 0; grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); grid-auto-rows: max-content; align-content: start; gap: 10px; overflow-y: auto; padding: 4px; }
 .deck-card { display: flex; align-items: flex-start; gap: 12px; min-height: 160px; padding: 10px; border: 1px solid #47544a; border-radius: 5px; background: #182529; }
-.deck-card .card-art { flex: 0 0 84px; width: 84px; height: 110px; }
+.deck-card .card-visual { flex: 0 0 84px; width: 84px; height: 110px; }
 .deck-card-info { display: flex; flex: 1; flex-direction: column; min-width: 0; gap: 4px; }
 .deck-card-info h3 { color: #f3e5c7; font-size: 14px; }
 .deck-card-info p { color: #bac2b4; font-size: 10px; line-height: 1.35; overflow-wrap: anywhere; }
