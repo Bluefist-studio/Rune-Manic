@@ -375,6 +375,54 @@
     const attack = targetIsDefending && getRuneAttribute(target) === "intangible" ? card.rank - (attribute === "fortitude" ? 1 : 0) - (source.haunted ? 1 : 0) + (source.amplification ?? 0) : getRuneStats(source, sourceOwner).attack;
     return targetIsDefending ? defendingDamage(source, target, attack) : Math.max(0, attack);
   }
+  function getAttackDamage(game2, sourceSlot, targetSlot) {
+    const source = game2.players[game2.currentPlayer].slots[sourceSlot];
+    const target = game2.players[1 - game2.currentPlayer].slots[targetSlot];
+    if (!source || !target) throw new Error("Attack damage requires an occupied source and target.");
+    const lightning = getRuneAttribute(source) === "lightning" && getRuneAttribute(target) !== "intangible";
+    return {
+      damage: lightning ? defendingDamage(source, target, 1) : combatDamage(source, target, game2.players[game2.currentPlayer], true),
+      deflectable: isDeflecting(target)
+    };
+  }
+  function getAttributeDamagePreview(game2, sourceSlot, targetPlayer, targetSlot, selectedTargets = []) {
+    const source = game2.players[game2.currentPlayer].slots[sourceSlot];
+    const target = game2.players[targetPlayer].slots[targetSlot];
+    if (!source || !target) throw new Error("Attribute damage preview requires an occupied source and target.");
+    const attribute = getRuneAttribute(source);
+    let damage;
+    let variable = false;
+    switch (attribute) {
+      case "fire":
+        damage = 2;
+        break;
+      case "acid":
+        damage = 1;
+        break;
+      case "fire-ball":
+        damage = 2;
+        break;
+      case "magma":
+        damage = 2;
+        variable = true;
+        break;
+      case "soul":
+        damage = 1;
+        variable = true;
+        break;
+      case "bolt":
+      case "masterful":
+        damage = selectedTargets.filter((slot) => slot === targetSlot).length + 1;
+        break;
+      default:
+        return null;
+    }
+    return {
+      damage: defendingDamage(source, target, damage),
+      variable,
+      deflectable: isDeflecting(target)
+    };
+  }
   function rollSixSided(rollDie) {
     const value2 = rollDie();
     if (!Number.isInteger(value2) || value2 < 1 || value2 > 6) {
@@ -651,7 +699,13 @@
       case "chooseFocus": {
         const rune = player.slots[action.slot];
         const source = action.sourceSlot === null ? null : currentCard(player.slots[action.sourceSlot]);
-        rune.focusCopy = source ? { attribute: source.attribute, name: source.name, attributeText: source.attributeText } : null;
+        const sourceRune = action.sourceSlot === null ? null : player.slots[action.sourceSlot];
+        rune.focusCopy = source ? {
+          attribute: source.attribute,
+          name: source.name,
+          attributeText: source.attributeText,
+          sourceRuneId: sourceRune.stack[0].id
+        } : null;
         delete rune.focusChoicePending;
         if (getRuneStats(rune, player).health <= 0) {
           destroy(next.currentPlayer, action.slot);
@@ -1968,6 +2022,20 @@
       }];
     }));
   }
+  function getFocusCopyLinks(game2) {
+    return game2.players.flatMap((player, sourcePlayer) => player.slots.flatMap((focus, sourceSlot) => {
+      const sourceRuneId = focus?.focusCopy?.sourceRuneId;
+      if (!sourceRuneId) return [];
+      const targetSlot = player.slots.findIndex((rune) => rune?.stack[0].id === sourceRuneId);
+      return targetSlot < 0 ? [] : [{
+        type: "focus-copy",
+        sourcePlayer,
+        sourceSlot,
+        targetPlayer: sourcePlayer,
+        targetSlot
+      }];
+    }));
+  }
   function getMovedRunes(before, after) {
     const player = before.currentPlayer;
     const oldSlots = before.players[player].slots;
@@ -2062,9 +2130,12 @@
   var selection = null;
   var draggedCardId = null;
   var draggedRune = null;
+  var dragHoverTarget = null;
+  var activeDragImage = null;
   var handOrder = "rank";
   var visualColumnOrder = [[0, 1, 2, 3], [0, 1, 2, 3]];
   var targetPreview = null;
+  var focusTargetPreview = null;
   var inspected = null;
   var handoff = false;
   var handoffAfterDraw = false;
@@ -2082,10 +2153,37 @@
   var feedbackQueue = [];
   var currentFeedback = null;
   var feedbackTimer = null;
-  var feedbackComplete = null;
   var boardAnimation = null;
   var victoryPending = false;
   var message = "Select a rank 1 rune from your hand to begin.";
+  function setDragImage(event, source) {
+    const bounds = source.getBoundingClientRect();
+    const image = source.cloneNode(true);
+    image.classList.add("drag-image-clone");
+    image.removeAttribute("id");
+    image.setAttribute("aria-hidden", "true");
+    image.draggable = false;
+    Object.assign(image.style, {
+      position: "fixed",
+      left: "-10000px",
+      top: "0",
+      width: `${bounds.width}px`,
+      height: `${bounds.height}px`,
+      margin: "0",
+      pointerEvents: "none"
+    });
+    document.body.appendChild(image);
+    activeDragImage = image;
+    event.dataTransfer.setDragImage(
+      image,
+      Math.round(event.clientX - bounds.left),
+      Math.round(event.clientY - bounds.top)
+    );
+  }
+  function clearDragImage() {
+    activeDragImage?.remove();
+    activeDragImage = null;
+  }
   function viewPlayer() {
     return gameMode === "ai" ? 0 : game.currentPlayer;
   }
@@ -2097,7 +2195,7 @@
     aiTimer = null;
   }
   function scheduleAiTurn() {
-    if (!isAiTurn() || aiPaused || aiTimer !== null || boardAnimation || feedbackComplete || currentFeedback || feedbackQueue.length || document.querySelector("dialog[open]")) return;
+    if (!isAiTurn() || aiPaused || aiTimer !== null || document.querySelector("dialog[open]")) return;
     aiTimer = setTimeout(() => {
       aiTimer = null;
       if (!isAiTurn() || document.querySelector("dialog[open]")) return;
@@ -2125,7 +2223,6 @@
     pauseFeedback();
     feedbackQueue = [];
     currentFeedback = null;
-    feedbackComplete = null;
     victoryPending = false;
   }
   function cancelBoardAnimation() {
@@ -2136,6 +2233,7 @@
       animation.onfinish = null;
       animation.cancel();
     }
+    for (const timer of active.timers) clearTimeout(timer);
     for (const source of active.sources) source.classList.remove("animation-origin");
     for (const clone of active.clones) clone.remove();
   }
@@ -2154,17 +2252,21 @@
     }
   }
   function animateBoardAction(before, after, action, onFinish) {
+    cancelBoardAnimation();
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return false;
     const { destroyed, promoted } = getDestroyedAndPromoted(before, after);
     const moves = action.type === "move" ? getMovedRunes(before, after) : action.type === "attack" ? [{ player: before.currentPlayer, from: action.slot, to: action.target, targetPlayer: 1 - before.currentPlayer }] : [];
-    if (!moves.length && !destroyed.length) return false;
+    const handCard = action.type === "play" ? document.querySelector(`.hand-card[data-card-id="${action.cardId}"]`) : null;
+    const playCard = Boolean(handCard);
+    const upgradeCard = action.type === "upgrade";
+    if (!moves.length && !destroyed.length && !playCard && !upgradeCard) return false;
     const slot = (owner, position) => {
       const element = document.querySelector(`.slot[data-player="${owner}"][data-slot="${position}"]`);
       if (!element) throw new Error("Cannot animate a missing battlefield position.");
       return element;
     };
     const afterRects = /* @__PURE__ */ new Map();
-    if (action.type === "move" || promoted.length) {
+    if (action.type === "move" || action.type === "play" || promoted.length) {
       const elements = [...document.querySelectorAll(".row .slot[data-player][data-slot]")];
       const originals = elements.map((element) => element.style.gridColumn);
       const layouts = after.players.map((player, index) => getBattlefieldColumns(player.slots, visualColumnOrder[index]));
@@ -2184,12 +2286,12 @@
         });
       }
     }
-    const first = moves[0] ?? { player: destroyed[0].player, from: destroyed[0].slot };
+    const first = moves[0] ?? (destroyed.length ? { player: destroyed[0].player, from: destroyed[0].slot } : { player: before.currentPlayer, from: action.slot });
     if (typeof slot(first.player, first.from).animate !== "function") {
       console.warn("Card animations are unavailable in this browser.");
       return false;
     }
-    const active = { animations: [], clones: [], sources: [] };
+    const active = { animations: [], clones: [], sources: [], timers: [] };
     const clones = /* @__PURE__ */ new Map();
     let lastAnimation = null;
     let latestEnd = 0;
@@ -2234,12 +2336,6 @@
       };
     };
     boardAnimation = active;
-    $("effect-links").hidden = true;
-    $("battlefield").inert = true;
-    $("controls").inert = true;
-    $("inspect-panel").inert = true;
-    $("offer-draw").disabled = true;
-    if (handoff) $("game").inert = true;
     for (const move of moves) {
       const { clone, rect } = cloneRune(move.player, move.from);
       const target = slot(move.targetPlayer ?? move.player, move.to);
@@ -2261,7 +2357,53 @@
         );
       }
     }
-    const destructionDelay = moves.length ? 600 : 0;
+    if (playCard) {
+      const card = before.players[before.currentPlayer].hand.find((item) => item.id === action.cardId);
+      if (!card) throw new Error("Cannot animate a played card that is missing from its hand.");
+      const source = handCard;
+      const rect = source.getBoundingClientRect();
+      const clone = source.cloneNode(true);
+      clone.className = "slot motion-card occupied";
+      clone.removeAttribute("data-card-id");
+      clone.setAttribute("aria-hidden", "true");
+      clone.inert = true;
+      Object.assign(clone.style, {
+        left: `${rect.left}px`,
+        top: `${rect.top}px`,
+        width: `${rect.width}px`,
+        height: `${rect.height}px`
+      });
+      document.body.append(clone);
+      if (source) {
+        source.classList.add("animation-origin");
+        active.sources.push(source);
+      }
+      active.clones.push(clone);
+      const targetRect = afterRects.get(`${before.currentPlayer}:${action.slot}`);
+      const { x, y } = delta(rect, targetRect);
+      animate(
+        clone,
+        [
+          { transform: "translate(0, 0) scale(1)" },
+          { transform: `translate(${x}px, ${y}px) scale(.8)` }
+        ],
+        { duration: 650, easing: "cubic-bezier(.2,.8,.25,1)", fill: "forwards" }
+      );
+    }
+    if (upgradeCard) {
+      const { clone } = cloneRune(before.currentPlayer, action.slot);
+      const newCard = after.players[before.currentPlayer].slots[action.slot].stack.at(-1);
+      const image = clone.querySelector(".card-art");
+      active.timers.push(setTimeout(() => {
+        image.src = newCard.image;
+      }, 280));
+      animate(clone, [
+        { transform: "perspective(700px) rotateY(0) scale(1)", filter: "brightness(1)" },
+        { transform: "perspective(700px) rotateY(90deg) scale(1.08)", filter: "brightness(2)" },
+        { transform: "perspective(700px) rotateY(0) scale(1)", filter: "brightness(1.4)" }
+      ], { duration: 620, easing: "ease-in-out", fill: "forwards" });
+    }
+    const destructionDelay = moves.length || playCard ? 600 : 0;
     for (const item of destroyed) {
       const { clone } = cloneRune(item.player, item.slot);
       if (action.type === "upgrade" && item.player === before.currentPlayer && item.slot === action.slot) {
@@ -2289,6 +2431,56 @@
     };
     return true;
   }
+  function showDamageFeedback(before, after, action) {
+    for (let player = 0; player < after.players.length; player++) {
+      for (let slot = 0; slot < after.players[player].slots.length; slot++) {
+        const rune = after.players[player].slots[slot];
+        if (!rune) continue;
+        const oldSlot = before.players[player].slots.findIndex((previous) => previous?.stack[0].id === rune.stack[0].id);
+        if (oldSlot < 0) continue;
+        const previousRune = before.players[player].slots[oldSlot];
+        const oldHealth = getRuneStats(previousRune, before.players[player]).health;
+        const newHealth = getRuneStats(rune, after.players[player]).health;
+        const damage = (rune.damage ?? 0) - (previousRune.damage ?? 0) + (previousRune.temporaryHealth ?? 0) - (rune.temporaryHealth ?? 0);
+        if (damage <= 0) continue;
+        addDamageFeedback(player, slot, oldHealth, newHealth, damage);
+      }
+    }
+    for (let player = 0; player < before.players.length; player++) {
+      for (let slot = 0; slot < before.players[player].slots.length; slot++) {
+        const rune = before.players[player].slots[slot];
+        if (!rune || after.players.some((owner) => owner.slots.some((next) => next?.stack[0].id === rune.stack[0].id))) continue;
+        const attribute = action.type === "attribute" && player === before.currentPlayer && slot === action.slot ? getRuneAttribute(rune) : null;
+        const targeted = action.type === "attack" || action.type === "attribute" && player === action.targetPlayer && (action.targetSlot === slot || action.targetSlots?.includes(slot));
+        const healthCost = attribute === "bolt" || attribute === "masterful";
+        if (!targeted && !healthCost) continue;
+        const oldHealth = getRuneStats(rune, before.players[player]).health;
+        if (oldHealth > 0) addDamageFeedback(player, slot, oldHealth, 0, oldHealth);
+      }
+    }
+  }
+  function addDamageFeedback(player, slot, oldHealth, newHealth, damage) {
+    const position = document.querySelector(`.slot[data-player="${player}"][data-slot="${slot}"]`);
+    if (!position) return;
+    const health = position.querySelector(".health");
+    const rect = health?.getBoundingClientRect() ?? position.getBoundingClientRect();
+    const cue = node("span", "damage-feedback", `HP ${oldHealth}`);
+    Object.assign(cue.style, { left: `${rect.left + rect.width / 2}px`, top: `${rect.top}px` });
+    document.body.append(cue);
+    if (typeof cue.animate === "function" && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      cue.animate([
+        { opacity: 0, transform: "translate(-50%, 6px) scale(.9)" },
+        { opacity: 1, transform: "translate(-50%, -2px) scale(1)", offset: 0.18 },
+        { opacity: 1, transform: "translate(-50%, -12px) scale(1)", offset: 0.76 },
+        { opacity: 0, transform: "translate(-50%, -22px) scale(1.08)" }
+      ], { duration: 820, easing: "ease-out" }).onfinish = () => cue.remove();
+    } else {
+      setTimeout(() => cue.remove(), 820);
+    }
+    setTimeout(() => {
+      if (cue.isConnected) cue.textContent = newHealth === 0 ? `-${damage} HP \xB7 OUT` : `-${damage} HP`;
+    }, 240);
+  }
   function showVictory() {
     if (!victoryPending || boardAnimation || currentFeedback || feedbackQueue.length || document.querySelector("dialog[open]")) return;
     victoryPending = false;
@@ -2300,16 +2492,10 @@
     $("victory-dialog").showModal();
   }
   function showNextFeedback() {
-    if (boardAnimation || feedbackTimer !== null || document.querySelector("dialog[open]")) return;
+    if (feedbackTimer !== null || document.querySelector("dialog[open]")) return;
     if (!currentFeedback) currentFeedback = feedbackQueue.shift() ?? null;
     if (!currentFeedback) {
       $("feedback-stage").hidden = true;
-      if (feedbackComplete) {
-        const complete = feedbackComplete;
-        feedbackComplete = null;
-        complete();
-        return;
-      }
       showVictory();
       scheduleAiTurn();
       return;
@@ -2327,37 +2513,9 @@
       showNextFeedback();
     }, 1300);
   }
-  function queueDiceFeedback(cues, onComplete) {
-    $("battlefield").inert = true;
-    $("controls").inert = true;
-    $("inspect-panel").inert = true;
-    $("concede").disabled = true;
-    $("offer-draw").disabled = true;
-    $("focus-choice").hidden = true;
-    feedbackComplete = onComplete;
+  function queueDiceFeedback(cues) {
     feedbackQueue.push(...cues);
     showNextFeedback();
-  }
-  function renderAfterDestruction(before, after) {
-    const viewer = gameMode === "ai" ? 0 : before.currentPlayer;
-    game = {
-      ...after,
-      currentPlayer: before.currentPlayer,
-      players: after.players.map((player, index) => {
-        const previousCards = new Set(before.players[index].hand.map((card) => card.id));
-        return { ...player, hand: player.hand.filter((card) => previousCards.has(card.id)) };
-      })
-    };
-    const links = getEffectLinks(game);
-    renderRow("opponent-back", 1 - viewer, 4, links);
-    renderRow("opponent-front", 1 - viewer, 0, links);
-    renderRow("player-front", viewer, 0, links);
-    renderRow("player-back", viewer, 4, links);
-    renderEffectLinks(links);
-    renderHand();
-    $("action-wheel").hidden = true;
-    $("message").textContent = "Rune destroyed. Resolving Necrotic.";
-    game = after;
   }
   function flashActionSlots(before, action) {
     const player = before.currentPlayer;
@@ -2686,9 +2844,6 @@
   }
   function perform(action, aiAttempt = null, placementSide = null) {
     const previous = game;
-    const previousMessage = message;
-    const previousHandoff = handoff;
-    const previousHandoffAfterDraw = handoffAfterDraw;
     const attribute = action.type === "attribute" ? getRuneAttribute(game.players[game.currentPlayer].slots[action.slot]) : null;
     const sourceName = action.type === "attribute" ? game.players[game.currentPlayer].slots[action.slot].stack.at(-1).name : null;
     const focusRune = action.type === "chooseFocus" ? game.players[game.currentPlayer].slots[action.slot] : null;
@@ -2788,37 +2943,21 @@
       addHistory(entry);
       finishLearningMatch();
     };
-    const finish = () => {
-      message = resultMessage;
-      handoff = resultHandoff;
-      handoffAfterDraw = resultHandoffAfterDraw;
-      if (necroticDice.length) recordResult();
-      render();
-      if (action.type === "endTurn" && game.winner === null && !handoff) highlightTurn();
-      flashActionSlots(previous, action);
-      if (game.winner !== null) victoryPending = true;
-      showNextFeedback();
+    handoff = resultHandoff;
+    handoffAfterDraw = resultHandoffAfterDraw;
+    message = resultMessage;
+    animateBoardAction(previous, result, action, () => {
+      showVictory();
       scheduleAiTurn();
-    };
-    const resolve = () => {
-      game = result;
-      if (!necroticDice.length) recordResult();
-      const afterAnimation = () => {
-        if (!necroticDice.length) return finish();
-        renderAfterDestruction(previous, result);
-        queueDiceFeedback(necroticDice, finish);
-      };
-      if (!animateBoardAction(previous, game, action, afterAnimation)) afterAnimation();
-    };
-    game = previous;
-    message = previousMessage;
-    handoff = previousHandoff;
-    handoffAfterDraw = previousHandoffAfterDraw;
-    if (!beforeDice.length) {
-      resolve();
-      return;
-    }
-    queueDiceFeedback(beforeDice, resolve);
+    });
+    recordResult();
+    render();
+    showDamageFeedback(previous, result, action);
+    if (action.type === "endTurn" && game.winner === null && !handoff) highlightTurn();
+    flashActionSlots(previous, action);
+    if (game.winner !== null) victoryPending = true;
+    queueDiceFeedback([...beforeDice, ...necroticDice]);
+    scheduleAiTurn();
   }
   function chooseHand(card, dragging = false) {
     selection = { kind: "hand", cardId: card.id };
@@ -2938,8 +3077,7 @@
   function renderEffectLinks(links = getEffectLinks(game)) {
     const svg = $("effect-links");
     svg.replaceChildren();
-    svg.hidden = Boolean(boardAnimation);
-    if (boardAnimation) return;
+    svg.hidden = false;
     const board = $("rune-board").getBoundingClientRect();
     if (!board.width || !board.height) return;
     svg.setAttribute("viewBox", `0 0 ${board.width} ${board.height}`);
@@ -2960,7 +3098,15 @@
       return { left: rect.left + (rect.width - artWidth) / 2, top: rect.top + (rect.height - artHeight) / 2, width: artWidth, height: artHeight };
     };
     const previews = getTargetLinks(selection, selectedActions(), game.currentPlayer, targetPreview);
-    for (const link of [...links, ...previews]) {
+    const activeFocusLinks = getFocusCopyLinks(game);
+    const focusPreview = focusTargetPreview ? [{
+      sourcePlayer: focusTargetPreview.player,
+      sourceSlot: focusTargetPreview.focusSlot,
+      targetPlayer: focusTargetPreview.player,
+      targetSlot: focusTargetPreview.sourceSlot,
+      type: "focus-preview"
+    }].filter((preview) => !activeFocusLinks.some((link) => link.sourcePlayer === preview.sourcePlayer && link.sourceSlot === preview.sourceSlot && link.targetPlayer === preview.targetPlayer && link.targetSlot === preview.targetSlot)) : [];
+    for (const link of [...links, ...activeFocusLinks, ...previews, ...focusPreview]) {
       const source = artworkBounds(link.sourcePlayer, link.sourceSlot);
       const target = artworkBounds(link.targetPlayer, link.targetSlot);
       const sx = source.left + source.width / 2 - board.left;
@@ -2990,6 +3136,16 @@
       );
     }
   }
+  function setFocusTargetPreview(focusSlot, sourceSlot) {
+    const next = sourceSlot === null ? null : { player: game.currentPlayer, focusSlot, sourceSlot };
+    if (focusTargetPreview?.player === next?.player && focusTargetPreview?.focusSlot === next?.focusSlot && focusTargetPreview?.sourceSlot === next?.sourceSlot) return;
+    document.querySelectorAll(".slot.focus-target-preview").forEach((slot) => slot.classList.remove("focus-target-preview"));
+    focusTargetPreview = next;
+    if (next) {
+      document.querySelector(`.slot[data-player="${next.player}"][data-slot="${next.sourceSlot}"]`)?.classList.add("focus-target-preview");
+    }
+    renderEffectLinks();
+  }
   function renderRow(id, playerIndex, start, links, preservedRune) {
     const row = $(id);
     const preserved = preservedRune && row.contains(preservedRune) ? preservedRune : null;
@@ -3006,8 +3162,10 @@
     for (const column of getBattlefieldColumns(slots, visualColumnOrder[playerIndex])) {
       const slot = start + column.column;
       const rune = game.players[playerIndex].slots[slot];
+      const focusTarget = focusTargetPreview?.player === playerIndex && focusTargetPreview.sourceSlot === slot;
       if (preserved && Number(preserved.dataset.slot) === slot) {
         preserved.classList.add("selected");
+        preserved.classList.toggle("focus-target-preview", focusTarget);
         continue;
       }
       const disabled = isRuneDisabled(game, playerIndex, slot);
@@ -3022,37 +3180,54 @@
       const upgradeAvailable = Boolean(rune?.acted && isMine && playerIndex === game.currentPlayer && ALLOW_SECOND_PLAYER_FIRST_TURN_UPGRADE && game.turn === 2 && getLegalActions(game).some((action) => action.type === "upgrade" && action.slot === slot));
       const availability = rune && isMine && !disabled && !rune.stunned ? `, movement ${rune.moved ? "used" : "available"}, ${upgradeAvailable ? "upgrade available" : `action ${rune.acted ? "used" : "available"}`}` : "";
       const effects = effectDescriptions(links, playerIndex, slot);
-      button.setAttribute("aria-label", `${isMine ? "Your" : "Opponent"} ${describeSlot(slot)}${rune ? `: ${rune.stack.at(-1).name}` : ": empty"}${rune?.haunted ? ", haunted" : ""}${rune?.amplification ? `, +${rune.amplification} attack` : ""}${disabled ? ", disabled" : ""}${rune?.stunned ? ", skips turn" : ""}${availability}${selectedTarget ? `, selected target${targetCount ? `, ${targetCount} damage` : ""}` : ""}${effects.length ? `, ${effects.join(", ")}` : ""}`);
-      const legal = selection?.kind === "hand" && isMine ? options.some((action) => (action.type === "play" || action.type === "upgrade") && action.slot === slot) : selection?.kind === "rune" && (selection.mode === "move" && isMine && options.some((action) => action.type === "move" && action.to === slot) || isActionTarget(selection, options, game.currentPlayer, playerIndex, slot));
-      const showEmpty = isMine && (selection?.kind === "rune" && selection.mode === "move" || selection?.kind === "hand" && legal);
+      button.setAttribute("aria-label", `${isMine ? "Your" : "Opponent"} ${describeSlot(slot)}${rune ? `: ${rune.stack.at(-1).name}` : ": empty"}${rune?.haunted ? ", haunted" : ""}${rune?.amplification ? `, +${rune.amplification} attack` : ""}${disabled ? ", disabled" : ""}${rune?.stunned ? ", skips turn" : ""}${availability}${selectedTarget ? `, selected target${targetCount ? `, ${targetCount} damage` : ""}` : ""}${focusTarget ? ", Focus copy source" : ""}${effects.length ? `, ${effects.join(", ")}` : ""}`);
+      const draggingAttack = Boolean(draggedRune && selection?.kind === "rune" && selection.mode === "attack" && selection.slot === draggedRune.slot && draggedRune.player === game.currentPlayer);
+      const legal = selection?.kind === "hand" && isMine ? options.some((action) => (action.type === "play" || action.type === "upgrade") && action.slot === slot) : selection?.kind === "rune" && (selection.mode === "move" && isMine && options.some((action) => action.type === "move" && action.to === slot) || draggingAttack && isMine && options.some((action) => action.type === "move" && action.from === selection.slot && action.to === slot) || isActionTarget(selection, options, game.currentPlayer, playerIndex, slot));
+      const attackPreview = legal && selection?.mode === "attack" && !isMine ? getAttackDamage(game, selection.slot, slot) : null;
+      const attributePreview = legal && selection?.mode === "attribute" ? getAttributeDamagePreview(game, selection.slot, playerIndex, slot, selection.targetSlots) : null;
+      const damagePreview = attackPreview ?? attributePreview;
+      if (damagePreview) {
+        const amount = attributePreview?.variable ? `0-${damagePreview.damage}` : damagePreview.deflectable ? `up to ${damagePreview.damage}` : String(damagePreview.damage);
+        button.setAttribute("aria-label", `${button.getAttribute("aria-label")}, ${amount} damage`);
+      }
+      const showEmpty = isMine && (selection?.kind === "rune" && (selection.mode === "move" || draggingAttack) && legal || selection?.kind === "hand" && legal);
       if (!rune && !showEmpty) {
         button.classList.add("slot-hidden");
         button.setAttribute("aria-hidden", "true");
         button.tabIndex = -1;
       }
       if (legal) button.classList.add("legal");
-      if (legal && ["attack", "attribute"].includes(selection?.mode)) {
+      if (legal && (selection?.mode === "attack" && !isMine || selection?.mode === "attribute")) {
         button.setAttribute("aria-label", `${button.getAttribute("aria-label")}, valid ${selection.mode} target`);
       }
       if (selectedTarget || isMine && selection?.kind === "rune" && selection.slot === slot) button.classList.add("selected");
+      if (focusTarget) button.classList.add("focus-target-preview");
       if (rune) {
         button.classList.add("occupied");
         const card = rune.stack[rune.stack.length - 1];
-        if (isMine && playerIndex === game.currentPlayer && !isAiTurn() && getLegalActions(game).some((action) => action.type === "move" && action.from === slot)) {
+        const runeActions = getLegalActions(game).filter((action) => action.type === "move" ? action.from === slot : action.type === "attack" && action.slot === slot);
+        if (isMine && playerIndex === game.currentPlayer && !isAiTurn() && runeActions.length) {
           button.draggable = true;
           button.addEventListener("dragstart", (event) => {
+            setDragHoverTarget(null);
+            clearDragImage();
+            setDragImage(event, button);
             draggedRune = { player: playerIndex, slot };
             event.dataTransfer.effectAllowed = "move";
             event.dataTransfer.setData("text/plain", card.name);
-            selection = { kind: "rune", slot, mode: "move" };
+            const canAttack = runeActions.some((action) => action.type === "attack");
+            const canMove = runeActions.some((action) => action.type === "move");
+            selection = { kind: "rune", slot, mode: canAttack ? "attack" : "move" };
             targetPreview = null;
             inspected = { card, rune, playerIndex };
-            message = "Drop on a glowing friendly position to move or swap.";
+            message = canAttack ? `Drop on a glowing enemy rune to attack${canMove ? ", or a glowing friendly position to move or swap" : ""}.` : "Drop on a glowing friendly position to move or swap.";
             render(false, button);
           });
           button.addEventListener("dragend", () => {
+            clearDragImage();
             if (draggedRune?.player !== playerIndex || draggedRune.slot !== slot) return;
             draggedRune = null;
+            setDragHoverTarget(null);
             cancelSelection();
           });
         }
@@ -3063,6 +3238,10 @@
         });
         const statusEffects = node("span", "slot-effects");
         if (targetCount) statusEffects.append(node("span", "target-count", `${targetCount} DMG`));
+        if (damagePreview) {
+          const amount = attributePreview?.variable ? `0-${damagePreview.damage}` : damagePreview.deflectable ? `UP TO ${damagePreview.damage}` : String(damagePreview.damage);
+          statusEffects.append(node("span", "target-count target-damage", `${amount} DMG`));
+        }
         if (rune.haunted) statusEffects.append(node("span", "haunted", "HAUNTED"));
         if (rune.amplification) statusEffects.append(node("span", "haunted", `+${rune.amplification} ATK`));
         if (disabled) statusEffects.append(node("span", "stunned", "DISABLED"));
@@ -3150,14 +3329,19 @@
       button.append(artwork(card), node("span", "hand-card-name", `${card.name}${group.length > 1 ? ` \xD7${group.length}` : ""}`));
       button.addEventListener("click", () => chooseHand(card));
       button.addEventListener("dragstart", (event) => {
+        setDragHoverTarget(null);
+        clearDragImage();
         draggedCardId = card.id;
+        setDragImage(event, button);
         event.dataTransfer.effectAllowed = "move";
         event.dataTransfer.setData("text/plain", card.name);
         chooseHand(card, true);
       });
       button.addEventListener("dragend", () => {
+        clearDragImage();
         if (draggedCardId !== card.id) return;
         draggedCardId = null;
+        setDragHoverTarget(null);
         if (selection?.kind === "hand" && selection.cardId === card.id) cancelSelection();
       });
       stack.append(button);
@@ -3192,6 +3376,10 @@
     details.append(node("h3", null, card.name));
     details.append(node("p", "detail-rank", `RANK ${card.rank} \xB7 ${card.colors.join(" / ").toUpperCase()}`));
     details.append(node("p", null, card.attributeText));
+    const attribute = rune ? getRuneAttribute(rune) : card.attribute;
+    if (attribute === "spectral" || attribute === "masterful") {
+      details.append(node("p", "detail-tip", "This attribute can only be activated from the Frontline."));
+    }
     const moreInfo = node("button", "button secondary more-info", "More info");
     moreInfo.type = "button";
     moreInfo.setAttribute("aria-label", `More info about ${card.name}`);
@@ -3247,7 +3435,10 @@
     const panel = $("focus-choice");
     const show = choices.length > 0 && !handoff && !isAiTurn();
     panel.hidden = !show;
-    if (!show) return false;
+    if (!show) {
+      setFocusTargetPreview(null, null);
+      return false;
+    }
     const slot = choices[0].slot;
     const player = game.players[game.currentPlayer];
     const rune = player.slots[slot];
@@ -3261,7 +3452,19 @@
       const text = source ? `${source.name} (${describeSlot(action.sourceSlot)}): ${source.attributeText}` : "No attribute";
       const button = node("button", "button secondary focus-option", `${text}${lethal ? " \u2014 Focus will be destroyed" : ""}`);
       button.type = "button";
-      button.addEventListener("click", () => perform(action));
+      button.dataset.sourceSlot = action.sourceSlot === null ? "" : String(action.sourceSlot);
+      const updatePreview = () => {
+        const active = options.querySelector(".focus-option:hover") ?? options.querySelector(".focus-option:focus");
+        setFocusTargetPreview(slot, active?.dataset.sourceSlot ? Number(active.dataset.sourceSlot) : null);
+      };
+      button.addEventListener("mouseenter", updatePreview);
+      button.addEventListener("mouseleave", updatePreview);
+      button.addEventListener("focus", updatePreview);
+      button.addEventListener("blur", updatePreview);
+      button.addEventListener("click", () => {
+        setFocusTargetPreview(null, null);
+        perform(action);
+      });
       options.append(button);
     }
     options.firstElementChild.focus();
@@ -3326,24 +3529,54 @@
       (drawOfferPhase === "response" ? $("draw-decline") : $("draw-offer-ready")).focus();
     }
   }
+  function setDragHoverTarget(slot) {
+    if (dragHoverTarget === slot) return;
+    dragHoverTarget?.classList.remove("drag-hover");
+    dragHoverTarget = slot;
+    dragHoverTarget?.classList.add("drag-hover");
+  }
   $("battlefield").addEventListener("dragover", (event) => {
-    const slot = event.target.closest(".slot.legal");
+    const slot = event.target.closest(".slot");
+    if (!slot || !slot.classList.contains("legal")) {
+      setDragHoverTarget(null);
+      return;
+    }
+    const isMine = Number(slot.dataset.player) === game.currentPlayer;
     const draggingHand = draggedCardId && selection?.kind === "hand" && selection.cardId === draggedCardId;
-    const draggingRune = draggedRune && selection?.kind === "rune" && selection.mode === "move" && selection.slot === draggedRune.slot && draggedRune.player === game.currentPlayer;
-    if (!draggingHand && !draggingRune || !slot || Number(slot.dataset.player) !== game.currentPlayer) return;
+    const draggingRune = draggedRune && selection?.kind === "rune" && selection.slot === draggedRune.slot && draggedRune.player === game.currentPlayer;
+    const destination = Number(slot.dataset.placementSlot ?? slot.dataset.slot);
+    const canMoveRune = draggingRune && isMine && selectedActions().some((action) => action.type === "move" && action.from === draggedRune.slot && action.to === destination);
+    const canAttackTarget = draggingRune && selection.mode === "attack" && !isMine && selectedActions().some((action) => action.type === "attack" && action.slot === draggedRune.slot && action.target === Number(slot.dataset.slot));
+    const canPlayCard = draggingHand && isMine && selectedActions().some((action) => (action.type === "play" || action.type === "upgrade") && action.slot === destination);
+    if (!canPlayCard && !canMoveRune && !canAttackTarget) {
+      setDragHoverTarget(null);
+      return;
+    }
     event.preventDefault();
     event.dataTransfer.dropEffect = "move";
+    setDragHoverTarget(slot);
+  });
+  $("battlefield").addEventListener("dragleave", (event) => {
+    if (event.relatedTarget && $("battlefield").contains(event.relatedTarget)) return;
+    setDragHoverTarget(null);
   });
   $("battlefield").addEventListener("drop", (event) => {
+    clearDragImage();
     const slot = event.target.closest(".slot.legal");
-    if (!slot || Number(slot.dataset.player) !== game.currentPlayer) return;
+    if (!slot) {
+      setDragHoverTarget(null);
+      return;
+    }
+    const isMine = Number(slot.dataset.player) === game.currentPlayer;
     const destination = Number(slot.dataset.placementSlot ?? slot.dataset.slot);
     const action = selectedActions().find((item) => {
       if (draggedCardId && selection?.kind === "hand" && selection.cardId === draggedCardId) {
-        return (item.type === "play" || item.type === "upgrade") && item.slot === destination;
+        return isMine && (item.type === "play" || item.type === "upgrade") && item.slot === destination;
       }
-      return draggedRune && selection?.kind === "rune" && selection.mode === "move" && selection.slot === draggedRune.slot && draggedRune.player === game.currentPlayer && item.type === "move" && item.to === destination;
+      if (!draggedRune || selection?.kind !== "rune" || selection.slot !== draggedRune.slot || draggedRune.player !== game.currentPlayer) return false;
+      return isMine ? item.type === "move" && item.from === draggedRune.slot && item.to === destination : selection.mode === "attack" && item.type === "attack" && item.slot === draggedRune.slot && item.target === Number(slot.dataset.slot);
     });
+    setDragHoverTarget(null);
     if (!action) return;
     event.preventDefault();
     draggedCardId = null;
@@ -3446,7 +3679,7 @@
   $("wheel-cancel").addEventListener("click", cancelSelection);
   function cancelSelectionOnRightClick(event) {
     const tradeOpen = $("trade-dialog").open;
-    if (!selection || isAiTurn() || boardAnimation || currentFeedback || feedbackComplete || document.querySelector("dialog[open]") && !tradeOpen) return;
+    if (!selection || isAiTurn() || document.querySelector("dialog[open]") && !tradeOpen) return;
     event.preventDefault();
     if (tradeOpen) $("trade-dialog").close();
     cancelSelection();
@@ -3479,8 +3712,10 @@
     if (gameMode === "ai") {
       const type = acceptsDrawOffer(game, 1) ? "acceptDraw" : "declineDraw";
       perform({ type, player: 1 });
+      if (type === "declineDraw") $("ai-draw-response-dialog").showModal();
     }
   });
+  $("ai-draw-response-continue").addEventListener("click", () => $("ai-draw-response-dialog").close());
   $("draw-offer-ready").addEventListener("click", () => {
     drawOfferPhase = drawOfferPhase === "handoff" ? "response" : null;
     render();
