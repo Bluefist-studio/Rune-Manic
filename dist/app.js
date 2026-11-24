@@ -7,7 +7,7 @@
       colors: ["blue", "purple"],
       attribute: "hardened",
       attributeText: "While defending, this rune taken damage is reduced by 1",
-      image: "Cards online/RM_Card_B1 Hardened3.png"
+      image: "Cards online/RM_Card_B1 Hardened4.png"
     },
     bolt: {
       name: "Bolt",
@@ -15,7 +15,7 @@
       colors: ["green", "orange"],
       attribute: "bolt",
       attributeText: "Trade hit points for damage againts any rune in play",
-      image: "Cards online/RM_Card_B1 Reach3.png"
+      image: "Cards online/RM_Card_B1 Reach4.png"
     },
     hardenedMajor: {
       name: "Hardened Major",
@@ -23,7 +23,7 @@
       colors: ["blue"],
       attribute: "hardened",
       attributeText: "While defending, this rune taken damage is reduced by 1",
-      image: "Cards online/RM_Card_B2 Hardened Major3.png"
+      image: "Cards online/RM_Card_B2 Hardened Major4.png"
     },
     doubleBolt: {
       name: "Double Bolt",
@@ -31,7 +31,7 @@
       colors: ["green"],
       attribute: "bolt",
       attributeText: "Trade hit points for damage againts any rune in play",
-      image: "Cards online/RM_Card_B2 Reach Major3.png"
+      image: "Cards online/RM_Card_B2 Reach Major4.png"
     },
     amplifying: {
       name: "Amplifying",
@@ -39,7 +39,7 @@
       colors: ["green", "blue"],
       attribute: "amplifying",
       attributeText: "Use this rune to amplify another rune, giving it +1 to its attack",
-      image: "Cards online/RM_Card_B3 Amplifying3.png"
+      image: "Cards online/RM_Card_B3 Amplifying4.png"
     },
     focus: {
       name: "Focus",
@@ -47,7 +47,7 @@
       colors: ["green", "blue"],
       attribute: "focus",
       attributeText: "Mimic the attribute of one of your rune in play, choose at the beginning of your turn",
-      image: "Cards online/RM_Card_B3 Focus3.png"
+      image: "Cards online/RM_Card_B3 Focus4.png"
     },
     splinter: {
       name: "Splinter",
@@ -55,7 +55,7 @@
       colors: ["green", "blue"],
       attribute: "splinter",
       attributeText: "When damaging a rune with this rune it also deals 1 damage to 3 other runes",
-      image: "Cards online/RM_Card_B4 Splinter3.png"
+      image: "Cards online/RM_Card_B4 Splinter4.png"
     },
     mending: {
       name: "Mending",
@@ -63,7 +63,7 @@
       colors: ["orange", "purple"],
       attribute: "mending",
       attributeText: "Restore 1 hit point on a friendly rune",
-      image: "Cards online/RM_Card_O1 Mending3.png"
+      image: "Cards online/RM_Card_O1 Mending4.png"
     },
     deflecting: {
       name: "Deflecting",
@@ -71,7 +71,7 @@
       colors: ["orange"],
       attribute: "deflecting",
       attributeText: "When attacked, roll a dice. On a 4+, negate damage. On a 6, the attacker loses 1 Hit Point. Does not deal other damage when deflecting",
-      image: "Cards online/RM_Card_O1 Deflecting3.png"
+      image: "Cards online/RM_Card_O1 Deflecting4.png"
     },
     deflectingMajor: {
       name: "Deflecting Major",
@@ -79,7 +79,7 @@
       colors: ["orange"],
       attribute: "deflecting-major",
       attributeText: "When attacked, roll a dice. On a 4+, negate damage and the attacker loses 1 Hit Point. Does not deal other damage when deflecting",
-      image: "Cards online/RM_Card_O2 Deflecting Major3.png"
+      image: "Cards online/RM_Card_O2 Deflecting Major4.png"
     },
     fire: {
       name: "Fire",
@@ -87,7 +87,7 @@
       colors: ["orange"],
       attribute: "fire",
       attributeText: "Inflicts 2 damage to any rune in play, then is destroyed immediately",
-      image: "Cards online/RM_Card_O2 Fire3.png"
+      image: "Cards online/RM_Card_O2 Fire4.png"
     },
     acid: {
       name: "Acid",
@@ -95,7 +95,7 @@
       colors: ["orange"],
       attribute: "acid",
       attributeText: "Inflicts 1 damage to 3 rune in play, then is destroyed immediately",
-      image: "Cards online/RM_Card_O2 Acid3.png"
+      image: "Cards online/RM_Card_O2 Acid4.png"
     },
     lightning: {
       name: "Lightning",
@@ -103,7 +103,7 @@
       colors: ["orange"],
       attribute: "lightning",
       attributeText: "When this rune attacks, it inflicts 1 damage and disables the target for 1 turn.",
-      image: "Cards online/RM_Card_O2 Lightning3.png"
+      image: "Cards online/RM_Card_O2 Lightning4.png"
     },
     fireBall: {
       name: "Fire Ball",
@@ -111,7 +111,7 @@
       colors: ["orange"],
       attribute: "fire-ball",
       attributeText: "Does 2 damage to 1 rune and 1 damage to 3 more runes of your choice then is destroyed immediately",
-      image: "Cards online/RM_Card_O3 Fire3.png"
+      image: "Cards online/RM_Card_O3 Fire4.png"
     },
     intangible: {
       name: "Intangible",
@@ -119,7 +119,7 @@
       colors: ["orange"],
       attribute: "intangible",
       attributeText: "While defending, attacking rune's attributes have no effect against this rune",
-      image: "Cards online/RM_Card_O3 Intangible3.png"
+      image: "Cards online/RM_Card_O3 Intangible4.png"
     },
     magma: {
       name: "Magma",
@@ -127,7 +127,7 @@
       colors: ["orange"],
       attribute: "magma",
       attributeText: "Roll a dice, on a roll of 3+ you inflict 2 damage to a rune of your choice",
-      image: "Cards online/RM_Card_O4 Magma3.png"
+      image: "Cards online/RM_Card_O4 Magma4.png"
     },
     elementary: {
       name: "Elementary",
@@ -135,7 +135,7 @@
       colors: ["grey"],
       attribute: "any-next-rank",
       attributeText: "This rune can be upgraded to any rune of the next rank",
-      image: "Cards online/RM_Card_G1 Elementary3.png"
+      image: "Cards online/RM_Card_G1 Elementary4.png"
     },
     transmute: {
       name: "Transmute",
@@ -143,7 +143,7 @@
       colors: ["grey"],
       attribute: "any-next-rank",
       attributeText: "This rune can be upgraded to any rune of the next rank",
-      image: "Cards online/RM_Card_G2 transmute3.png"
+      image: "Cards online/RM_Card_G2 transmute4.png"
     },
     haunting: {
       name: "Haunting",
@@ -151,7 +151,7 @@
       colors: ["purple"],
       attribute: "haunting",
       attributeText: "The rune that destroys this rune has -1 to its attack until its own destruction, this is not cumulative",
-      image: "Cards online/RM_Card_P1 haunting3.png"
+      image: "Cards online/RM_Card_P1 haunting4.png"
     },
     fortitude: {
       name: "Fortitude",
@@ -159,7 +159,7 @@
       colors: ["purple"],
       attribute: "fortitude",
       attributeText: "This rune has -1 to its attack and +2 to its hit points.",
-      image: "Cards online/RM_Card_P2 Fortitude3.png"
+      image: "Cards online/RM_Card_P2 Fortitude4.png"
     },
     spectral: {
       name: "Spectral",
@@ -167,7 +167,7 @@
       colors: ["purple"],
       attribute: "spectral",
       attributeText: "Disable a rune of your choice until your next turn or this rune get destroyed. Must be in the Frontline",
-      image: "Cards online/RM_Card_P2 Spectral3.png"
+      image: "Cards online/RM_Card_P2 Spectral4.png"
     },
     torment: {
       name: "Torment",
@@ -175,7 +175,7 @@
       colors: ["purple"],
       attribute: "fortitude",
       attributeText: "This rune has -1 to its attack and +2 to its hit points.",
-      image: "Cards online/RM_Card_P3 Regenerative3.png"
+      image: "Cards online/RM_Card_P3 Regenerative4.png"
     },
     necrotic: {
       name: "Necrotic",
@@ -183,7 +183,7 @@
       colors: ["purple"],
       attribute: "necrotic",
       attributeText: "When one of your rune is destroyed, roll a dice, on 3+ add a Haunting rune to your hand",
-      image: "Cards online/RM_Card_P3 Necromantic3.png"
+      image: "Cards online/RM_Card_P3 Necromantic4.png"
     },
     soul: {
       name: "Soul",
@@ -191,7 +191,7 @@
       colors: ["purple"],
       attribute: "soul",
       attributeText: "Roll a dice, on a roll of 3+ this rune cause 1 damage to a rune of your choice and gain 1 hit point",
-      image: "Cards online/RM_Card_P4 Soul3.png"
+      image: "Cards online/RM_Card_P4 Soul4.png"
     },
     brawling: {
       name: "Brawling",
@@ -199,7 +199,7 @@
       colors: ["red", "black"],
       attribute: "brawling",
       attributeText: "This rune has +1 to its hit points.",
-      image: "Cards online/RM_Card_R1 Brawler3.png"
+      image: "Cards online/RM_Card_R1 Brawler4.png"
     },
     piercing: {
       name: "Piercing",
@@ -207,7 +207,7 @@
       colors: ["black"],
       attribute: "piercing",
       attributeText: "This rune always ignores damage reduction",
-      image: "Cards online/RM_Card_R2 Piercing3.png"
+      image: "Cards online/RM_Card_R2 Piercing4.png"
     },
     uprising: {
       name: "Uprising",
@@ -215,7 +215,7 @@
       colors: ["red"],
       attribute: "uprising",
       attributeText: "For each Brawling rune in play this rune gets +1 to its attack",
-      image: "Cards online/RM_Card_R2 Uprising3.png"
+      image: "Cards online/RM_Card_R2 Uprising4.png"
     },
     piercingMajor: {
       name: "Piercing Major",
@@ -223,7 +223,7 @@
       colors: ["black"],
       attribute: "piercing-major",
       attributeText: "This rune always ignores damage reduction and has +1 to its attack",
-      image: "Cards online/RM_Card_R3 Piercing Major3.png"
+      image: "Cards online/RM_Card_R3 Piercing Major4.png"
     },
     powerful: {
       name: "Powerful",
@@ -231,7 +231,7 @@
       colors: ["red"],
       attribute: "powerful",
       attributeText: "When attacking, this rune deals its normal damage and 1 damage to the rune behind its target",
-      image: "Cards online/RM_Card_R3 Powerful3.png"
+      image: "Cards online/RM_Card_R3 Powerful4.png"
     },
     masterful: {
       name: "Masterful",
@@ -239,7 +239,7 @@
       colors: ["red", "black"],
       attribute: "masterful",
       attributeText: "When attacking with this rune, trade hit points for damage on 1 or more runes.",
-      image: "Cards online/RM_Card_R4 Masterful3.png"
+      image: "Cards online/RM_Card_R4 Masterful4.png"
     }
   };
 
@@ -2396,6 +2396,7 @@
       const image = clone.querySelector(".card-art");
       active.timers.push(setTimeout(() => {
         image.src = newCard.image;
+        clone.querySelector(".card-rank").textContent = String(newCard.rank);
       }, 280));
       animate(clone, [
         { transform: "perspective(700px) rotateY(0) scale(1)", filter: "brightness(1)" },
@@ -2407,7 +2408,9 @@
     for (const item of destroyed) {
       const { clone } = cloneRune(item.player, item.slot);
       if (action.type === "upgrade" && item.player === before.currentPlayer && item.slot === action.slot) {
-        clone.querySelector(".card-art").src = before.players[item.player].hand.find((card) => card.id === action.cardId).image;
+        const card = before.players[item.player].hand.find((card2) => card2.id === action.cardId);
+        clone.querySelector(".card-art").src = card.image;
+        clone.querySelector(".card-rank").textContent = String(card.rank);
       }
       animate(clone, [
         { opacity: 1, filter: "brightness(1)", transform: "scale(1)", offset: 0 },
@@ -2812,11 +2815,15 @@
     return `${slot < 4 ? "frontline" : "backline"} ${slot % 4 + 1}`;
   }
   function artwork(card) {
+    const visual = node("span", "card-visual");
     const image = node("img", "card-art");
     image.src = card.image;
     image.alt = "";
     image.draggable = false;
-    return image;
+    const rank = node("span", "card-rank", String(card.rank));
+    rank.setAttribute("aria-hidden", "true");
+    visual.append(image, rank);
+    return visual;
   }
   function selectedActions() {
     const actions = getLegalActions(game);
@@ -3233,8 +3240,9 @@
         }
         const stats = getRuneStats(rune, game.players[playerIndex]);
         const image = artwork(card);
-        image.addEventListener("load", () => {
-          if (image.isConnected) renderEffectLinks();
+        const cardImage = image.querySelector(".card-art");
+        cardImage.addEventListener("load", () => {
+          if (cardImage.isConnected) renderEffectLinks();
         });
         const statusEffects = node("span", "slot-effects");
         if (targetCount) statusEffects.append(node("span", "target-count", `${targetCount} DMG`));
