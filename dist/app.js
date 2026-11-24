@@ -2396,7 +2396,7 @@
       const image = clone.querySelector(".card-art");
       active.timers.push(setTimeout(() => {
         image.src = newCard.image;
-        clone.querySelector(".card-rank").textContent = String(newCard.rank);
+        clone.querySelector(".card-rank").src = `Cards online/rank${newCard.rank}.png`;
       }, 280));
       animate(clone, [
         { transform: "perspective(700px) rotateY(0) scale(1)", filter: "brightness(1)" },
@@ -2410,7 +2410,7 @@
       if (action.type === "upgrade" && item.player === before.currentPlayer && item.slot === action.slot) {
         const card = before.players[item.player].hand.find((card2) => card2.id === action.cardId);
         clone.querySelector(".card-art").src = card.image;
-        clone.querySelector(".card-rank").textContent = String(card.rank);
+        clone.querySelector(".card-rank").src = `Cards online/rank${card.rank}.png`;
       }
       animate(clone, [
         { opacity: 1, filter: "brightness(1)", transform: "scale(1)", offset: 0 },
@@ -2820,7 +2820,10 @@
     image.src = card.image;
     image.alt = "";
     image.draggable = false;
-    const rank = node("span", "card-rank", String(card.rank));
+    const rank = node("img", "card-rank");
+    rank.src = `Cards online/rank${card.rank}.png`;
+    rank.alt = "";
+    rank.draggable = false;
     rank.setAttribute("aria-hidden", "true");
     visual.append(image, rank);
     return visual;
