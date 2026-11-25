@@ -126,7 +126,108 @@ h2 { font-size: 18px; color: #f4e9d3; }
 .slot-label { font-size: 10px; letter-spacing: .06em; text-transform: uppercase; }
 .card-visual { position: relative; display: block; }
 .card-art { display: block; width: 100%; height: 100%; object-fit: contain; }
-.card-rank { position: absolute; top: 4px; left: 4px; width: clamp(18px, 28%, 40px); aspect-ratio: 1; object-fit: contain; pointer-events: none; }
+.card-rank { position: absolute; z-index: 2; top: 4px; left: 4px; width: clamp(18px, 28%, 40px); aspect-ratio: 1; object-fit: contain; pointer-events: none; }
+.rune-particles { position: absolute; z-index: 1; inset: 2px; overflow: hidden; pointer-events: none; }
+.rune-particle {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: var(--rune-color-primary);
+  box-shadow: 0 0 6px 1px var(--rune-glow-primary);
+  opacity: 0;
+  animation: rune-idle-particle 2.8s ease-in-out infinite;
+  transition: width .2s ease, height .2s ease, box-shadow .2s ease, filter .2s ease;
+}
+.rune-particle:nth-child(even) {
+  background: var(--rune-color-secondary);
+  box-shadow: 0 0 6px 1px var(--rune-glow-secondary);
+}
+.rune-particle-excited {
+  width: 5px;
+  height: 5px;
+  box-shadow: 0 0 12px 4px var(--rune-glow-primary);
+  filter: brightness(1.35);
+  animation-duration: 1.9s;
+}
+.rune-particle-excited:nth-child(even) {
+  box-shadow: 0 0 12px 4px var(--rune-glow-secondary);
+}
+.rune-particles.cooling .rune-particle-excited {
+  width: 3px;
+  height: 3px;
+  box-shadow: 0 0 6px 1px var(--rune-glow-primary);
+  filter: none;
+  transition-duration: 1.4s;
+}
+.rune-particles.cooling .rune-particle-excited:nth-child(even) {
+  box-shadow: 0 0 6px 1px var(--rune-glow-secondary);
+}
+.rune-surge-particle {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: var(--surge-size);
+  height: var(--surge-size);
+  border-radius: 50%;
+  background: var(--rune-color-primary);
+  box-shadow: 0 0 8px 2px var(--rune-glow-primary);
+  animation: rune-particle-surge var(--surge-duration) cubic-bezier(.12,.72,.24,1) var(--surge-delay) both;
+  pointer-events: none;
+}
+.rune-surge-particle.rune-surge-secondary {
+  background: var(--rune-color-secondary);
+  box-shadow: 0 0 8px 2px var(--rune-glow-secondary);
+}
+.rune-death-particles { position: fixed; z-index: 10; pointer-events: none; }
+.rune-death-particle {
+  filter: blur(.3px);
+  animation: rune-death-burst var(--surge-duration) ease-out var(--surge-delay) both;
+}
+@keyframes rune-death-burst {
+  0% {
+    opacity: 0;
+    transform: translate(calc(-50% + var(--surge-start-x)), calc(-50% + var(--surge-start-y))) scale(.25);
+  }
+  12% { opacity: 1; }
+  38% {
+    opacity: .9;
+    transform: translate(calc(-50% + var(--surge-mid-x)), calc(-50% + var(--surge-mid-y))) scale(1.35) rotate(var(--surge-spin));
+  }
+  100% {
+    opacity: 0;
+    transform: translate(calc(-50% + var(--surge-x)), calc(-50% + var(--surge-y))) scale(.15) rotate(var(--surge-spin));
+  }
+}
+@keyframes rune-particle-surge {
+  0% {
+    opacity: 0;
+    transform: translate(calc(-50% + var(--surge-start-x)), calc(-50% + var(--surge-start-y))) scale(.2);
+  }
+  14% { opacity: 1; }
+  44% {
+    opacity: .9;
+    transform: translate(calc(-50% + var(--surge-mid-x)), calc(-50% + var(--surge-mid-y))) scale(1.3) rotate(var(--surge-spin));
+  }
+  100% {
+    opacity: 0;
+    transform: translate(calc(-50% + var(--surge-x)), calc(-50% + var(--surge-y))) scale(.1) rotate(var(--surge-spin));
+  }
+}
+@keyframes rune-idle-particle {
+  0% { opacity: 0; transform: translate(var(--particle-origin-x), var(--particle-origin-y)) scale(.4); }
+  24% { opacity: .9; }
+  72% {
+    opacity: .65;
+    transform: translate(calc(var(--particle-origin-x) + var(--particle-mid-x)), calc(var(--particle-origin-y) + var(--particle-mid-y))) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(calc(var(--particle-origin-x) + var(--particle-end-x)), calc(var(--particle-origin-y) + var(--particle-end-y))) scale(.25);
+  }
+}
 .slot .card-visual { flex: 1 1 0; width: 100%; min-height: 0; max-height: 130px; padding: 1px; }
 .slot .card-rank { top: 4px; left: 4px; }
 .slot-effects, .slot-meta {
@@ -191,7 +292,7 @@ h2 { font-size: 18px; color: #f4e9d3; }
   padding: 0;
   border: 1px solid #536159;
   border-radius: 5px;
-  background: #080e13;
+  background: #182529;
   cursor: pointer;
 }
 button.hand-card:hover { border-color: #e0c58f; transform: translateY(-3px); }
@@ -202,7 +303,7 @@ button.hand-card:active { cursor: grabbing; }
 .hand-card-name { position: absolute; bottom: 3px; left: 0; width: 100%; overflow: hidden; color: #c3cabe; font-size: 10px; text-overflow: ellipsis; white-space: nowrap; }
 .sidebar { grid-column: 3; grid-row: 1 / -1; display: flex; flex-direction: column; gap: 14px; min-height: 0; overflow-y: auto; }
 .command-panel { position: relative; flex: none; }
-.help-button { position: absolute; top: 12px; right: 12px; width: 30px; height: 30px; padding: 0; font-size: 16px; }
+.help-button { position: absolute; top: 12px; right: 12px; display: grid; place-items: center; width: 30px; height: 30px; padding: 0; font-size: 16px; line-height: 1; }
 .command-panel #command-turn, .command-panel h2 { padding-right: 36px; }
 .panel { padding: 18px; border: 1px solid #47544a; border-radius: 6px; background: #101a1ee8; }
 .panel .eyebrow { margin-bottom: 10px; }
@@ -230,6 +331,16 @@ button.hand-card:active { cursor: grabbing; }
 @keyframes die-roll { from { opacity: 0; transform: rotate(-160deg) scale(.4); } to { opacity: 1; transform: rotate(0) scale(1); } }
 @media (prefers-reduced-motion: reduce) {
   .feedback-card, .feedback-die, .slot.feedback-slot, .turn-display.turn-changed, .center-line.turn-changed, #command-turn.turn-changed { animation: none; }
+  .rune-particle {
+    animation: none;
+    opacity: .45;
+    transform: translate(calc(var(--particle-origin-x) + var(--particle-mid-x)), calc(var(--particle-origin-y) + var(--particle-mid-y)));
+  }
+  .rune-particle-excited { width: 3px; height: 3px; box-shadow: 0 0 6px 1px var(--rune-glow-primary); filter: none; }
+  .rune-particle-excited:nth-child(even) { box-shadow: 0 0 6px 1px var(--rune-glow-secondary); }
+  .rune-particles.cooling .rune-particle-excited { transition-duration: .2s; }
+  .rune-surge-particle { animation-duration: .35s; }
+  .rune-death-particle { animation-duration: .35s; }
 }
 .button { border-radius: 4px; padding: 10px 12px; font-size: 12px; font-weight: 700; cursor: pointer; }
 .primary { width: 100%; color: #171a15; background: #ddbd7b; border: 1px solid #f0d7a2; }
