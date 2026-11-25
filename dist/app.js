@@ -2137,6 +2137,19 @@
   }
 
   // src/app.js
+  var RUNE_PARTICLE_COLORS = {
+    blue: { color: "#65caff", glow: "#65caff" },
+    purple: { color: "#d79bff", glow: "#d79bff" },
+    green: { color: "#7dffb2", glow: "#7dffb2" },
+    orange: { color: "#ffc16b", glow: "#ffc16b" },
+    grey: { color: "#e0e5eb", glow: "#e0e5eb" },
+    red: { color: "#ff6a75", glow: "#ff6a75" },
+    black: { color: "#000000", glow: "#000000" }
+  };
+  var RUNE_EXCITEMENT_DURATION = 1e3;
+  var RUNE_EXCITEMENT_FADE_DURATION = 1600;
+  var RUNE_EXCITEMENT_FADE_STEP = 350;
+  var excitedRunes = /* @__PURE__ */ new Map();
   var $ = (id) => document.getElementById(id);
   var playerDecks = [prebuiltDecks[0].deck.slice(), prebuiltDecks[0].deck.slice()];
   var game = createGame(playerDecks);
@@ -2279,9 +2292,11 @@
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return false;
     const { destroyed, promoted } = getDestroyedAndPromoted(before, after);
     const moves = action.type === "move" ? getMovedRunes(before, after) : action.type === "attack" ? [{ player: before.currentPlayer, from: action.slot, to: action.target, targetPlayer: 1 - before.currentPlayer }] : [];
-    const handCard = action.type === "play" ? document.querySelector(`.hand-card[data-card-id="${action.cardId}"]`) : null;
-    const playCard = Boolean(handCard);
+    const handCard = action.type === "play" || action.type === "upgrade" ? document.querySelector(`.hand-card[data-card-id="${action.cardId}"]`) : null;
+    const playCard = action.type === "play" && Boolean(handCard);
     const upgradeCard = action.type === "upgrade";
+    const upgradeCardFromHand = upgradeCard && Boolean(handCard);
+    const handCardTravel = playCard || upgradeCardFromHand;
     if (!moves.length && !destroyed.length && !playCard && !upgradeCard) return false;
     const slot = (owner, position) => {
       const element = document.querySelector(`.slot[data-player="${owner}"][data-slot="${position}"]`);
@@ -2314,7 +2329,23 @@
       console.warn("Card animations are unavailable in this browser.");
       return false;
     }
-    const active = { animations: [], clones: [], sources: [], timers: [] };
+    const active = {
+      animations: [],
+      clones: [],
+      sources: [],
+      timers: [],
+      visualSlots: before.players.map((player) => player.slots.slice()),
+      layoutSlots: before.players.map((player) => player.slots.slice()),
+      destroyedSlots: new Set(destroyed.map(({ player, slot: position }) => `${player}:${position}`)),
+      stage: "death",
+      pendingBursts: 0,
+      animationFinished: false
+    };
+    const finishIfReady = () => {
+      if (boardAnimation !== active || !active.animationFinished || active.pendingBursts > 0) return;
+      cancelBoardAnimation();
+      onFinish();
+    };
     const clones = /* @__PURE__ */ new Map();
     let lastAnimation = null;
     let latestEnd = 0;
@@ -2326,6 +2357,7 @@
         latestEnd = end;
         lastAnimation = animation;
       }
+      return animation;
     };
     const cloneRune = (player, position) => {
       const key = `${player}:${position}`;
@@ -2380,9 +2412,9 @@
         );
       }
     }
-    if (playCard) {
+    if (handCardTravel) {
       const card = before.players[before.currentPlayer].hand.find((item) => item.id === action.cardId);
-      if (!card) throw new Error("Cannot animate a played card that is missing from its hand.");
+      if (!card) throw new Error("Cannot animate a card that is missing from its hand.");
       const source = handCard;
       const rect = source.getBoundingClientRect();
       const clone = source.cloneNode(true);
@@ -2402,7 +2434,7 @@
         active.sources.push(source);
       }
       active.clones.push(clone);
-      const targetRect = afterRects.get(`${before.currentPlayer}:${action.slot}`);
+      const targetRect = playCard ? afterRects.get(`${before.currentPlayer}:${action.slot}`) : slot(before.currentPlayer, action.slot).getBoundingClientRect();
       const { x, y } = delta(rect, targetRect);
       animate(
         clone,
@@ -2413,7 +2445,7 @@
         { duration: 650, easing: "cubic-bezier(.2,.8,.25,1)", fill: "forwards" }
       );
     }
-    if (upgradeCard) {
+    if (upgradeCard && !handCard) {
       const { clone } = cloneRune(before.currentPlayer, action.slot);
       const newCard = after.players[before.currentPlayer].slots[action.slot].stack.at(-1);
       const image = clone.querySelector(".card-art");
@@ -2427,7 +2459,10 @@
         { transform: "perspective(700px) rotateY(0) scale(1)", filter: "brightness(1.4)" }
       ], { duration: 620, easing: "ease-in-out", fill: "forwards" });
     }
-    const destructionDelay = moves.length || playCard ? 600 : 0;
+    const destructionDelay = moves.length || handCardTravel ? 600 : 0;
+    const deathAnimationDuration = 650;
+    const burstLeadIn = 1100;
+    const slotMovementDelay = destructionDelay + deathAnimationDuration + burstLeadIn;
     for (const item of destroyed) {
       const { clone } = cloneRune(item.player, item.slot);
       if (action.type === "upgrade" && item.player === before.currentPlayer && item.slot === action.slot) {
@@ -2435,11 +2470,41 @@
         clone.querySelector(".card-art").src = card.image;
         clone.querySelector(".card-rank").src = `Cards online/rank${card.rank}.png`;
       }
-      animate(clone, [
+      const deathAnimation = animate(clone, [
         { opacity: 1, filter: "brightness(1)", transform: "scale(1)", offset: 0 },
-        { opacity: 1, filter: "brightness(2.5) sepia(1) saturate(4)", transform: "scale(1.07)", offset: 0.3 },
-        { opacity: 0, filter: "brightness(.6) sepia(1)", transform: "scale(.65)", offset: 1 }
-      ], { delay: destructionDelay, duration: 650, easing: "ease-in", fill: "forwards" });
+        { opacity: 1, filter: "brightness(2.5) sepia(1) saturate(4)", transform: "scale(1.04)", offset: 0.25 },
+        { opacity: 1, filter: "brightness(2.5) sepia(1) saturate(4)", transform: "scale(1.04)", offset: 0.78 },
+        { opacity: 0, filter: "brightness(.6) sepia(1)", transform: "scale(1)", offset: 1 }
+      ], { delay: destructionDelay, duration: deathAnimationDuration, easing: "ease-in", fill: "forwards" });
+      deathAnimation.onfinish = () => {
+        const { puff, lifetime: burstLifetime } = emitDeathParticlePuff(clone);
+        if (boardAnimation !== active) return;
+        if (puff) active.clones.push(puff);
+        active.pendingBursts++;
+        if (!active.deathResolved) {
+          active.deathResolved = true;
+          active.stage = "burst";
+          render();
+          if (promoted.length) {
+            active.timers.push(setTimeout(() => {
+              if (boardAnimation !== active) return;
+              active.stage = "moving";
+              for (const item2 of promoted) active.visualSlots[item2.player][item2.from] = null;
+              render();
+            }, burstLeadIn - 20));
+          }
+        }
+        active.timers.push(setTimeout(() => {
+          if (boardAnimation !== active) return;
+          active.pendingBursts--;
+          if (active.pendingBursts !== 0) return;
+          for (const item2 of destroyed) active.visualSlots[item2.player][item2.slot] = null;
+          active.layoutSlots = after.players.map((player) => player.slots.slice());
+          active.stage = "cleared";
+          render();
+          finishIfReady();
+        }, burstLifetime));
+      };
     }
     for (const item of promoted) {
       const { clone, rect } = cloneRune(item.player, item.from);
@@ -2447,13 +2512,15 @@
       animate(
         clone,
         [{ transform: "translate(0, 0)" }, { transform: `translate(${x}px, ${y}px)` }],
-        { delay: destructionDelay + 650, duration: 500, easing: "ease-in-out", fill: "forwards" }
+        { delay: slotMovementDelay, duration: 500, easing: "ease-in-out", fill: "forwards" }
       );
     }
+    const lastAnimationOnFinish = lastAnimation.onfinish;
     lastAnimation.onfinish = () => {
+      lastAnimationOnFinish?.();
       if (boardAnimation !== active) return;
-      cancelBoardAnimation();
-      onFinish();
+      active.animationFinished = true;
+      finishIfReady();
     };
     return true;
   }
@@ -2554,6 +2621,169 @@
     for (const [owner, slot] of positions) {
       document.querySelector(`.slot[data-player="${owner}"][data-slot="${slot}"]`)?.classList.add("feedback-slot");
     }
+  }
+  function randomizeRuneParticleDirection(particle) {
+    const angle = Math.random() * Math.PI * 2;
+    const distance = 8 + Math.random() * 12;
+    const x = Math.cos(angle) * distance;
+    const y = Math.sin(angle) * distance;
+    const originX = Math.random() * 40 - 20;
+    const originY = Math.random() * 40 - 20;
+    particle.style.setProperty("--particle-origin-x", `${originX}px`);
+    particle.style.setProperty("--particle-origin-y", `${originY}px`);
+    particle.style.setProperty("--particle-mid-x", `${x}px`);
+    particle.style.setProperty("--particle-mid-y", `${y}px`);
+    particle.style.setProperty("--particle-end-x", `${x * 1.6}px`);
+    particle.style.setProperty("--particle-end-y", `${y * 1.6}px`);
+  }
+  function addExcitedParticles(particles, count = 4) {
+    const offsets = [0.15, 0.65, 1.7, 2.4];
+    const existing = new Set([...particles.querySelectorAll(".rune-particle-excited")].map((spark) => Number(spark.dataset.particleIndex)));
+    for (let index = 0; index < count; index++) {
+      if (existing.has(index)) continue;
+      const spark = node("span", "rune-particle rune-particle-excited");
+      spark.dataset.particleIndex = String(index);
+      spark.style.animationDelay = `-${(performance.now() / 1e3 + offsets[index]) % 1.9}s`;
+      randomizeRuneParticleDirection(spark);
+      spark.addEventListener("animationiteration", () => randomizeRuneParticleDirection(spark));
+      particles.append(spark);
+    }
+  }
+  function runeParticleLayers(player, runeId) {
+    return [...document.querySelectorAll(".rune-particles")].filter((particles) => particles.dataset.player === String(player) && particles.dataset.runeId === String(runeId));
+  }
+  function clearRuneExcitementTimers(excitement) {
+    clearTimeout(excitement.timer);
+    for (const timer of excitement.fadeTimers ?? []) clearTimeout(timer);
+  }
+  function expireRuneExcitement(player, runeId, excitement) {
+    const excitementKey = `${player}:${runeId}`;
+    if (excitedRunes.get(excitementKey) !== excitement) return;
+    excitement.cooling = true;
+    const layers = runeParticleLayers(player, runeId);
+    const counts = layers.map((particles) => particles.querySelectorAll(".rune-particle-excited").length).filter(Boolean);
+    excitement.remainingExcitedParticles = counts.length ? Math.min(...counts) : 4;
+    excitement.fadeTimers = [];
+    for (const particles of layers) {
+      particles.classList.add("cooling");
+    }
+    for (let step = 1; step <= 4; step++) {
+      excitement.fadeTimers.push(setTimeout(() => {
+        if (excitedRunes.get(excitementKey) !== excitement) return;
+        excitement.remainingExcitedParticles = Math.max(0, excitement.remainingExcitedParticles - 1);
+        for (const particles of runeParticleLayers(player, runeId)) {
+          particles.querySelector(".rune-particle-excited")?.remove();
+        }
+      }, step * RUNE_EXCITEMENT_FADE_STEP));
+    }
+    excitement.timer = setTimeout(() => {
+      if (excitedRunes.get(excitementKey) !== excitement) return;
+      excitedRunes.delete(excitementKey);
+      for (const particles of runeParticleLayers(player, runeId)) {
+        particles.classList.remove("cooling");
+        particles.querySelectorAll(".rune-particle-excited").forEach((spark) => spark.remove());
+      }
+    }, RUNE_EXCITEMENT_FADE_DURATION);
+  }
+  function scheduleRuneExcitementExpiry(player, runeId, excitement) {
+    excitement.timer = setTimeout(() => {
+      if (excitedRunes.get(`${player}:${runeId}`) !== excitement) return;
+      const layers = runeParticleLayers(player, runeId);
+      if (layers.some((particles) => particles.closest(".slot")?.matches(":hover"))) {
+        excitement.expiresAt = performance.now() + RUNE_EXCITEMENT_DURATION;
+        for (const particles of layers) {
+          particles.classList.remove("cooling");
+          addExcitedParticles(particles);
+        }
+        scheduleRuneExcitementExpiry(player, runeId, excitement);
+        return;
+      }
+      expireRuneExcitement(player, runeId, excitement);
+    }, Math.max(0, excitement.expiresAt - performance.now()));
+  }
+  function exciteRuneParticles(player, runeId) {
+    const particles = [...document.querySelectorAll(".rune-particles")].find((element) => element.dataset.player === String(player) && element.dataset.runeId === String(runeId));
+    if (!particles) return;
+    const now = performance.now();
+    const excitementKey = `${player}:${runeId}`;
+    const previous = excitedRunes.get(excitementKey);
+    if (previous) clearRuneExcitementTimers(previous);
+    const excitement = { expiresAt: Math.max(previous?.expiresAt ?? 0, now + RUNE_EXCITEMENT_DURATION) };
+    excitedRunes.set(excitementKey, excitement);
+    scheduleRuneExcitementExpiry(player, runeId, excitement);
+    particles.classList.remove("cooling");
+    addExcitedParticles(particles);
+  }
+  function exciteActionRune(before, after, action) {
+    const player = before.currentPlayer;
+    const sourceSlot = action.type === "move" ? action.from : action.slot;
+    const sourceRune = action.type === "play" ? after.players[player].slots[action.slot] : before.players[player].slots[sourceSlot];
+    if (!sourceRune) return;
+    const runeId = sourceRune.stack[0].id;
+    const slot = after.players[player].slots.findIndex((rune) => rune?.stack[0].id === runeId);
+    if (slot < 0) return;
+    exciteRuneParticles(player, runeId);
+  }
+  function emitParticleBurst(particles, options) {
+    let lifetime = 0;
+    for (let index = 0; index < options.count; index++) {
+      const angle = Math.random() * Math.PI * 2;
+      const distance = options.minDistance + Math.random() * (options.maxDistance - options.minDistance);
+      const startDistance = Math.random() * 8;
+      const duration = options.minDuration + Math.random() * (options.maxDuration - options.minDuration);
+      const delay = Math.random() * options.maxDelay;
+      const endX = Math.cos(angle) * distance;
+      const endY = Math.sin(angle) * distance + (options.driftY ?? 0);
+      const effect = options.effect === "death" ? " rune-death-particle" : "";
+      const spark = node("span", `rune-surge-particle${effect}${index % 2 ? " rune-surge-secondary" : ""}`);
+      spark.style.setProperty("--surge-size", `${options.minSize + Math.random() * (options.maxSize - options.minSize)}px`);
+      spark.style.setProperty("--surge-start-x", `${Math.cos(angle) * startDistance}px`);
+      spark.style.setProperty("--surge-start-y", `${Math.sin(angle) * startDistance}px`);
+      spark.style.setProperty("--surge-mid-x", `${endX * 0.5 + (Math.random() - 0.5) * 18}px`);
+      spark.style.setProperty("--surge-mid-y", `${endY * 0.5 + (Math.random() - 0.5) * 18}px`);
+      spark.style.setProperty("--surge-spin", `${(Math.random() - 0.5) * 720}deg`);
+      spark.style.setProperty("--surge-x", `${endX}px`);
+      spark.style.setProperty("--surge-y", `${endY}px`);
+      spark.style.setProperty("--surge-duration", `${duration}s`);
+      spark.style.setProperty("--surge-delay", `${delay}s`);
+      particles.append(spark);
+      const cleanupDelay = (duration + delay) * 1e3 + 100;
+      lifetime = Math.max(lifetime, cleanupDelay);
+      setTimeout(() => spark.remove(), cleanupDelay);
+    }
+    return lifetime;
+  }
+  function emitDeathParticlePuff(clone) {
+    const visual = clone.querySelector(".card-visual");
+    if (!visual) return { puff: null, lifetime: 0 };
+    const sourceParticles = visual.querySelector(".rune-particles");
+    if (!sourceParticles) return { puff: null, lifetime: 0 };
+    const rect = visual.getBoundingClientRect();
+    const puff = node("span", "rune-death-particles");
+    Object.assign(puff.style, {
+      left: `${rect.left}px`,
+      top: `${rect.top}px`,
+      width: `${rect.width}px`,
+      height: `${rect.height}px`
+    });
+    const particleStyles = getComputedStyle(visual);
+    for (const variable of ["--rune-color-primary", "--rune-glow-primary", "--rune-color-secondary", "--rune-glow-secondary"]) {
+      puff.style.setProperty(variable, particleStyles.getPropertyValue(variable));
+    }
+    document.body.append(puff);
+    const lifetime = emitParticleBurst(puff, {
+      count: 32,
+      minDistance: 24,
+      maxDistance: 70,
+      minDuration: 0.45,
+      maxDuration: 0.8,
+      maxDelay: 0.05,
+      minSize: 2.5,
+      maxSize: 5.5,
+      effect: "death"
+    });
+    setTimeout(() => puff.remove(), lifetime + 100);
+    return { puff, lifetime: lifetime + 100 };
   }
   function highlightTurn() {
     for (const id of ["turn-display", "center-line", "command-turn"]) {
@@ -2980,12 +3210,15 @@
     handoffAfterDraw = resultHandoffAfterDraw;
     message = resultMessage;
     showDamageFeedback(previous, result, action);
-    animateBoardAction(previous, result, action, () => {
+    const boardAnimated = animateBoardAction(previous, result, action, () => {
+      render();
+      exciteActionRune(previous, result, action);
       showVictory();
       scheduleAiTurn();
     });
     recordResult();
     render();
+    if (!boardAnimated) exciteActionRune(previous, result, action);
     if (action.type === "endTurn" && game.winner === null && !handoff) highlightTurn();
     flashActionSlots(previous, action);
     if (game.winner !== null) victoryPending = true;
@@ -3191,10 +3424,11 @@
     }
     const isMine = playerIndex === viewPlayer();
     const options = selectedActions();
-    const slots = game.players[playerIndex].slots;
-    for (const column of getBattlefieldColumns(slots, visualColumnOrder[playerIndex])) {
+    const slots = boardAnimation?.visualSlots[playerIndex] ?? game.players[playerIndex].slots;
+    const layoutSlots = boardAnimation?.layoutSlots[playerIndex] ?? game.players[playerIndex].slots;
+    for (const column of getBattlefieldColumns(layoutSlots, visualColumnOrder[playerIndex])) {
       const slot = start + column.column;
-      const rune = game.players[playerIndex].slots[slot];
+      const rune = slots[slot];
       const focusTarget = focusTargetPreview?.player === playerIndex && focusTargetPreview.sourceSlot === slot;
       if (preserved && Number(preserved.dataset.slot) === slot) {
         preserved.classList.add("selected");
@@ -3206,7 +3440,11 @@
       button.type = "button";
       button.dataset.player = String(playerIndex);
       button.dataset.slot = String(slot);
+      if (rune) button.dataset.runeId = String(rune.stack[0].id);
       button.style.gridColumn = `${column.start} / span ${column.span}`;
+      if (["death", "burst"].includes(boardAnimation?.stage) && boardAnimation.destroyedSlots.has(`${playerIndex}:${slot}`)) {
+        button.classList.add("animation-origin");
+      }
       const selectedTarget = !isMine && selection?.mode === "attribute" && selection.targetSlots?.includes(slot);
       const attribute = selection?.kind === "rune" && selection.mode === "attribute" ? getRuneAttribute(game.players[game.currentPlayer].slots[selection.slot]) : null;
       const targetCount = (attribute === "masterful" || attribute === "bolt") && selectedTarget ? selection.targetSlots.filter((target) => target === slot).length : 0;
@@ -3266,6 +3504,34 @@
         }
         const stats = getRuneStats(rune, game.players[playerIndex]);
         const image = artwork(card);
+        const primaryParticleColor = RUNE_PARTICLE_COLORS[card.colors[0]] ?? RUNE_PARTICLE_COLORS.grey;
+        const secondaryParticleColor = RUNE_PARTICLE_COLORS[card.colors[1] ?? card.colors[0]] ?? RUNE_PARTICLE_COLORS.grey;
+        image.style.setProperty("--rune-color-primary", primaryParticleColor.color);
+        image.style.setProperty("--rune-glow-primary", primaryParticleColor.glow);
+        image.style.setProperty("--rune-color-secondary", secondaryParticleColor.color);
+        image.style.setProperty("--rune-glow-secondary", secondaryParticleColor.glow);
+        const particles = node("span", "rune-particles");
+        particles.setAttribute("aria-hidden", "true");
+        particles.dataset.player = String(playerIndex);
+        particles.dataset.runeId = String(rune.stack[0].id);
+        const particleTime = performance.now() / 1e3;
+        const particleOffsets = [0.3, 1.2, 2, 0.8];
+        for (let particle = 0; particle < 4; particle++) {
+          const spark = node("span", "rune-particle");
+          const phase = (particleTime + particleOffsets[particle]) % 2.8;
+          spark.style.animationDelay = `-${phase}s`;
+          randomizeRuneParticleDirection(spark);
+          spark.addEventListener("animationiteration", () => randomizeRuneParticleDirection(spark));
+          particles.append(spark);
+        }
+        const excitement = excitedRunes.get(`${playerIndex}:${rune.stack[0].id}`);
+        if (excitement?.cooling) {
+          particles.classList.add("cooling");
+          addExcitedParticles(particles, excitement.remainingExcitedParticles);
+        } else if (excitement?.expiresAt > performance.now()) {
+          addExcitedParticles(particles);
+        }
+        image.append(particles);
         const cardImage = image.querySelector(".card-art");
         cardImage.addEventListener("load", () => {
           if (cardImage.isConnected) renderEffectLinks();
@@ -3310,6 +3576,7 @@
         if (button.isConnected) renderEffectLinks();
       };
       button.addEventListener("mouseenter", showPreview);
+      if (rune) button.addEventListener("mouseenter", () => exciteRuneParticles(playerIndex, rune.stack[0].id));
       button.addEventListener("focus", showPreview);
       button.addEventListener("mouseleave", () => {
         if (document.activeElement !== button) clearPreview();
@@ -4293,6 +4560,53 @@
     setupDecks[editingPlayer] = customDecks[editingPlayer];
     closeDeckEditor();
   });
+  var replayingAnimationClick = false;
+  document.addEventListener("click", (event) => {
+    if (!boardAnimation || replayingAnimationClick || !(event.target instanceof Element)) return;
+    const clicked = event.target;
+    const slotButton = clicked.closest(".slot[data-player][data-slot], .slot[data-player][data-placement-slot]");
+    const handButton = clicked.closest(".hand-card[data-card-id]");
+    const controlButton = clicked.closest("#controls button, #action-wheel button");
+    if (!slotButton && !handButton && !controlButton) return;
+    const hadSelection = Boolean(selection);
+    const slotTarget = slotButton ? {
+      player: Number(slotButton.dataset.player),
+      slot: Number(slotButton.dataset.slot ?? slotButton.dataset.placementSlot),
+      placement: slotButton.dataset.placementSlot !== void 0,
+      runeId: slotButton.dataset.runeId
+    } : null;
+    const cardId = handButton?.dataset.cardId;
+    const controlId = controlButton?.id;
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    cancelBoardAnimation();
+    render();
+    let replacement;
+    if (slotTarget?.placement) {
+      replacement = [...document.querySelectorAll(".slot[data-player][data-placement-slot]")].find((button) => Number(button.dataset.player) === slotTarget.player && Number(button.dataset.placementSlot) === slotTarget.slot);
+    } else if (slotTarget) {
+      let player = slotTarget.player;
+      let position = slotTarget.slot;
+      if (slotTarget.runeId && !hadSelection) {
+        const owner = [slotTarget.player, 1 - slotTarget.player].find((playerIndex) => game.players[playerIndex].slots.some((rune) => rune?.stack[0].id === slotTarget.runeId));
+        if (owner === void 0) return;
+        player = owner;
+        position = game.players[owner].slots.findIndex((rune) => rune?.stack[0].id === slotTarget.runeId);
+      }
+      replacement = document.querySelector(`.slot[data-player="${player}"][data-slot="${position}"]`);
+    } else if (cardId) {
+      replacement = [...document.querySelectorAll(".hand-card[data-card-id]")].find((button) => button.dataset.cardId === cardId);
+    } else if (controlId) {
+      replacement = document.getElementById(controlId);
+    }
+    if (!replacement || replacement.disabled) return;
+    replayingAnimationClick = true;
+    try {
+      replacement.click();
+    } finally {
+      replayingAnimationClick = false;
+    }
+  }, true);
   function updateBoardOverlays() {
     renderEffectLinks();
     positionActionWheel();
