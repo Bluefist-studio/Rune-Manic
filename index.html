@@ -71,6 +71,7 @@
             <h2 id="command-title">Make your move</h2>
             <p id="message" aria-live="polite"></p>
             <p id="no-progress"></p>
+            <p id="rune-capacity"></p>
             <div class="action-buttons">
               <button id="move" class="button secondary" type="button">Move / swap</button>
               <button id="attack" class="button secondary" type="button">Attack</button>
@@ -238,6 +239,14 @@
           <option value="random" selected>Random</option>
         </select>
       </label>
+      <label class="setup-difficulty" for="rune-limit">Game format
+        <select id="rune-limit">
+          <option value="4" selected>4 runes (classic)</option>
+          <option value="6">6 runes</option>
+          <option value="8">8 runes</option>
+        </select>
+      </label>
+      <p>Rune limit is per player; each line still holds up to four runes.</p>
       <div class="setup-decks">
         <div>
           <label for="setup-deck-0">Player 1 deck</label>

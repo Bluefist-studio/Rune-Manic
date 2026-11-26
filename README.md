@@ -2,11 +2,13 @@
 
 ## Current step: playable prototype
 
-The JavaScript engine in `src/engine.js` models two players' hands, a four-rune battlefield, movement, basic upgrades, combat, and victory. Each player's slots 0-3 are the frontline; slots 4-7 are the corresponding backline positions. `getLegalActions(game)` lists turn actions and `applyAction(game, action)` returns a new state. Concession is a separate, turn-independent action, `{ type: "concede", player: 0 or 1 }`, and is not included in the AI's turn choices.
+The JavaScript engine in `src/engine.js` models two players' hands, a 4-, 6-, or 8-rune battlefield, movement, basic upgrades, combat, and victory. Each player's slots 0-3 are the frontline; slots 4-7 are the corresponding backline positions, with at most four runes in either line. `getLegalActions(game)` lists turn actions and `applyAction(game, action)` returns a new state. Concession is a separate, turn-independent action, `{ type: "concede", player: 0 or 1 }`, and is not included in the AI's turn choices.
 
-The catalog in `src/cards.js` contains all 46 playable card designs, including Focus, the four Rank 1 expansion runes, the first nine Rank 2 expansion runes, Execution, Infusion, and Command, with their original artwork paths and implemented attributes. Uprising stats require its owner as the second argument to `getRuneStats`. The engine rejects unsupported attributes rather than silently ignoring them.
+The catalog in `src/cards.js` contains all 47 playable card designs, including Focus, the four Rank 1 expansion runes, the first nine Rank 2 expansion runes, Execution, Infusion, Command, and Transpose, with their original artwork paths and implemented attributes. Uprising stats require its owner as the second argument to `getRuneStats`. The engine rejects unsupported attributes rather than silently ignoring them.
 
-Execution (Rank 3) uses a normal attack action: if the target's current HP is below its current maximum HP and it is not Intangible, it is destroyed without retaliation. Losing temporary HP alone does not make a target wounded; a successful Deflecting roll prevents Execution.
+Execution (Rank 4) uses a normal attack from the frontline: if the target's current HP is below its current maximum HP and it is not Intangible, it is destroyed without retaliation. Losing temporary HP alone does not make a target wounded; a successful Deflecting roll prevents Execution.
+
+Transpose (Rank 3) uses an action from the frontline to swap two eligible opposing runes chosen by its controller. Both positions must be legal; a backline rune needs its corresponding frontline occupied unless it is Phantom. Intangible and backline Cloak cannot be selected. Transpose ignores Snare and does not consume either target's normal movement.
 
 Infusion uses an action to give another friendly rune +2 attack until the start of its owner's next turn. Infusion pays 1 HP, temporary HP first, and may pay its last HP; its bonuses stack.
 
@@ -18,7 +20,7 @@ Command can refresh an ally that already used its action, granting one more atta
 
 Open `index.html` in a desktop browser. Keep the `dist`, `src`, and `Cards online` folders alongside the HTML file.
 
-From the main menu, choose **New game**, then select **Local two-player** or **Play against AI** and choose a deck for each player. Both initially default to **Random deck**. Deck selections, including unsaved custom decks, remain selected between games until the page is refreshed. **Random deck** remains selected and chooses again each game. Use **Build / edit** to customize either player's deck before starting. Against the AI, you play as Player 1; select its difficulty and deck in setup. Both AI difficulties use legal engine actions and simple board evaluations; neither guarantees optimal play.
+From the main menu, choose **New game**, then select **Local two-player** or **Play against AI**, choose a game format (4 runes by default, 6, or 8 per player), and choose a deck for each player. Each line remains limited to four runes, and the opening player may play up to the selected format's total on the first turn. Both decks initially default to **Random deck**. Deck selections, including unsaved custom decks, remain selected between games until the page is refreshed. **Random deck** remains selected and chooses again each game. Use **Build / edit** to customize either player's deck before starting. Against the AI, you play as Player 1; select its difficulty and deck in setup. Both AI difficulties use legal engine actions and simple board evaluations; neither guarantees optimal play.
 
 Choose who goes first in game setup. The default is **Random**, which chooses either player equally and shows the result in the action history. Against the AI, choose **AI** to play second; in local games, either player can start. After a draw, the player who went second starts the next round.
 
