@@ -125,6 +125,15 @@
       <button id="focus-concede" class="button secondary" type="button">Concede</button>
     </div>
   </div>
+  <dialog id="deflection-choice-dialog" aria-labelledby="deflection-choice-title" aria-describedby="deflection-choice-message">
+    <div class="masterful-card">
+      <p class="eyebrow">DEFLECTING</p>
+      <h2 id="deflection-choice-title">Choose your defense</h2>
+      <p id="deflection-choice-message"></p>
+      <button id="accept-attack" class="button secondary" type="button">Take the normal attack</button>
+      <button id="choose-deflection" class="button primary" type="button">Deflect</button>
+    </div>
+  </dialog>
   <dialog id="concede-dialog" aria-labelledby="concede-title" aria-describedby="concede-message">
     <div class="masterful-card">
       <h2 id="concede-title">Concede the game?</h2>
@@ -303,6 +312,27 @@
         <button id="deck-clear" class="button secondary" type="button">Clear deck</button>
         <button id="deck-generate" class="button secondary" type="button">Generate random deck</button>
       </div>
+      <div id="deck-browse-controls" class="deck-browse-controls">
+        <label class="deck-sort-control" for="deck-sort">Sort by
+          <select id="deck-sort">
+            <option value="name">Name A–Z</option>
+            <option value="rank-asc">Rank: low to high</option>
+            <option value="rank-desc">Rank: high to low</option>
+          </select>
+        </label>
+        <fieldset class="deck-filter-group">
+          <legend>Rank (any)</legend>
+          <div id="deck-rank-filters" class="deck-filter-options"></div>
+        </fieldset>
+        <fieldset class="deck-filter-group">
+          <legend>Color (any)</legend>
+          <div id="deck-color-filters" class="deck-filter-options"></div>
+        </fieldset>
+        <label class="deck-show-current">
+          <input id="deck-in-deck-filter" type="checkbox">
+          In current deck only
+        </label>
+      </div>
       <p id="deck-status" aria-live="polite"></p>
       <details id="deck-text-section" class="deck-text">
         <summary>Import / export text deck list</summary>
@@ -314,12 +344,15 @@
         </div>
         <p id="deck-text-status" role="status"></p>
       </details>
-      <div id="deck-cards" class="deck-cards"></div>
+      <div id="deck-cards" class="deck-cards">
+        <p id="deck-empty-results" class="deck-empty-results" hidden>No cards match these filters.</p>
+      </div>
       <footer class="deck-footer">
         <div class="deck-save">
           <label for="deck-name">Deck name</label>
           <input id="deck-name" type="text" maxlength="60" placeholder="Name your deck">
           <button id="deck-save" class="button secondary" type="button">Save deck</button>
+          <button id="deck-delete" class="button secondary" type="button" disabled>Delete saved deck</button>
         </div>
         <button id="deck-use" class="button primary" type="button">Use this deck</button>
       </footer>
