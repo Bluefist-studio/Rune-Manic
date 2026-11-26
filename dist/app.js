@@ -17,6 +17,70 @@
       attributeText: "Trade hit points for damage againts any rune in play",
       image: "Cards online/RM_Card_B1 Reach4.png"
     },
+    growth: {
+      name: "Growth",
+      rank: 1,
+      colors: ["green", "purple"],
+      attribute: "growth",
+      attributeText: "Gains 1 HP at the beginning of each turn. No maximum HP.",
+      image: "Cards online/RM_Card_G1 Growth.png"
+    },
+    regrowth: {
+      name: "Regrowth",
+      rank: 2,
+      colors: ["green", "purple"],
+      attribute: "regrowth",
+      attributeText: "Gains 1 HP at the beginning of each turn while in the Backline. Maximum 2 HP.",
+      image: "Cards online/RM_Card_G2 Regrowth.png"
+    },
+    leech: {
+      name: "Leech",
+      rank: 2,
+      colors: ["purple", "black"],
+      attribute: "leech",
+      attributeText: "When dealing damage, restores 1 HP, up to its maximum HP.",
+      image: "Cards online/RM_Card_P2 Leech.png"
+    },
+    ambush: {
+      name: "Ambush",
+      rank: 2,
+      colors: ["green", "black"],
+      attribute: "ambush",
+      attributeText: "Deals +1 damage when attacking a rune that has not yet acted this turn.",
+      image: "Cards online/RM_Card_G2 Ambush.png"
+    },
+    berserk: {
+      name: "Berserk",
+      rank: 2,
+      colors: ["red"],
+      attribute: "berserk",
+      attributeText: "Has +1 HP and gains +1 attack for each HP lost.",
+      image: "Cards online/RM_Card_R2 Berserk4.png"
+    },
+    frenzy: {
+      name: "Frenzy",
+      rank: 2,
+      colors: ["red"],
+      attribute: "frenzy",
+      attributeText: "Can attack twice in one turn.",
+      image: "Cards online/RM_Card_R2 Frenzy4.png"
+    },
+    snare: {
+      name: "Snare",
+      rank: 2,
+      colors: ["blue", "black"],
+      attribute: "snare",
+      attributeText: "Prevents an attacked rune from moving during its next turn.",
+      image: "Cards online/RM_Card_B2 Snare.png"
+    },
+    cloak: {
+      name: "Cloak",
+      rank: 1,
+      colors: ["green", "black"],
+      attribute: "cloak",
+      attributeText: "While in the Backline, cannot be targeted by enemy attributes.",
+      image: "Cards online/RM_Card_G1 Cloak.png"
+    },
     hardenedMajor: {
       name: "Hardened Major",
       rank: 2,
@@ -24,6 +88,54 @@
       attribute: "hardened",
       attributeText: "While defending, this rune taken damage is reduced by 1",
       image: "Cards online/RM_Card_B2 Hardened Major4.png"
+    },
+    guardian: {
+      name: "Guardian",
+      rank: 2,
+      colors: ["blue"],
+      attribute: "guardian",
+      attributeText: "Reduces damage dealt to friendly Backline runes by 1.",
+      image: "Cards online/RM_Card_B2 Guardian.png"
+    },
+    martyr: {
+      name: "Martyr",
+      rank: 2,
+      colors: ["blue"],
+      attribute: "martyr",
+      attributeText: "Destroy this rune to allow another friendly rune to use an action again this turn.",
+      image: "Cards online/RM_Card_B2 Martyr.png"
+    },
+    recall: {
+      name: "Recall",
+      rank: 2,
+      colors: ["green"],
+      attribute: "recall",
+      attributeText: "Return a friendly rune to your hand, including all runes attached beneath it.",
+      image: "Cards online/RM_Card_G2 Recall.png"
+    },
+    execution: {
+      name: "Execution",
+      rank: 3,
+      colors: ["black"],
+      attribute: "execution",
+      attributeText: "When attacking a rune that has lost 1 or more HP, destroy it without taking damage.",
+      image: "Cards online/RM_Card_R3 Execution.png"
+    },
+    infusion: {
+      name: "Infusion",
+      rank: 3,
+      colors: ["orange"],
+      attribute: "infusion",
+      attributeText: "Give another friendly rune +2 attack at the cost of 1 HP.",
+      image: "Cards online/RM_Card_O3 Infusion.png"
+    },
+    command: {
+      name: "Command",
+      rank: 3,
+      colors: ["green"],
+      attribute: "command",
+      attributeText: "Allows another friendly rune to perform an additional action.",
+      image: "Cards online/RM_Card_G3 Command.png"
     },
     doubleBolt: {
       name: "Double Bolt",
@@ -70,15 +182,23 @@
       rank: 1,
       colors: ["orange"],
       attribute: "deflecting",
-      attributeText: "When attacked, roll a dice. On a 4+, negate damage. On a 6, the attacker loses 1 Hit Point. Does not deal other damage when deflecting",
+      attributeText: "When attacked, choose whether to deflect or take the normal attack. If deflecting, roll a die: on 4+ negate damage; on 6, the attacker loses 1 Hit Point. No other damage is dealt when deflecting.",
       image: "Cards online/RM_Card_O1 Deflecting4.png"
+    },
+    phoenix: {
+      name: "Phoenix",
+      rank: 1,
+      colors: ["red", "orange"],
+      attribute: "phoenix",
+      attributeText: "When destroyed, roll a die. On 4+, return to hand.",
+      image: "Cards online/RM_Card_O1 Phoenix.png"
     },
     deflectingMajor: {
       name: "Deflecting Major",
       rank: 2,
       colors: ["orange"],
       attribute: "deflecting-major",
-      attributeText: "When attacked, roll a dice. On a 4+, negate damage and the attacker loses 1 Hit Point. Does not deal other damage when deflecting",
+      attributeText: "When attacked, choose whether to deflect or take the normal attack. If deflecting, roll a die: on 4+ negate damage and the attacker loses 1 Hit Point. No other damage is dealt when deflecting.",
       image: "Cards online/RM_Card_O2 Deflecting Major4.png"
     },
     fire: {
@@ -102,7 +222,7 @@
       rank: 2,
       colors: ["orange"],
       attribute: "lightning",
-      attributeText: "When this rune attacks, it inflicts 1 damage and disables the target for 1 turn.",
+      attributeText: "When this rune attacks or is attacked, it disables the opposing rune for 1 turn.",
       image: "Cards online/RM_Card_O2 Lightning4.png"
     },
     fireBall: {
@@ -152,6 +272,14 @@
       attribute: "haunting",
       attributeText: "The rune that destroys this rune has -1 to its attack until its own destruction, this is not cumulative",
       image: "Cards online/RM_Card_P1 haunting4.png"
+    },
+    phantom: {
+      name: "Phantom",
+      rank: 1,
+      colors: ["purple"],
+      attribute: "phantom",
+      attributeText: "Can be placed in the Backline without a Frontline rune.",
+      image: "Cards online/RM_Card_P1 Phanrom4.png"
     },
     fortitude: {
       name: "Fortitude",
@@ -251,7 +379,8 @@
   var ALLOW_SECOND_PLAYER_FIRST_TURN_UPGRADE = true;
   var NO_PROGRESS_TURN_LIMIT = 4;
   var CARD_FIELDS = ["name", "rank", "colors", "attribute", "attributeText", "image"];
-  var SUPPORTED_ATTRIBUTES = ["hardened", "any-next-rank", "fortitude", "brawling", "piercing", "piercing-major", "mending", "uprising", "haunting", "powerful", "fire", "magma", "intangible", "acid", "fire-ball", "deflecting", "deflecting-major", "lightning", "soul", "necrotic", "spectral", "bolt", "amplifying", "splinter", "masterful", "focus"];
+  var SUPPORTED_ATTRIBUTES = ["hardened", "any-next-rank", "fortitude", "brawling", "piercing", "piercing-major", "mending", "uprising", "haunting", "powerful", "fire", "magma", "intangible", "acid", "fire-ball", "deflecting", "deflecting-major", "lightning", "soul", "necrotic", "spectral", "bolt", "amplifying", "splinter", "masterful", "focus", "growth", "phoenix", "phantom", "cloak", "regrowth", "guardian", "ambush", "berserk", "frenzy", "snare", "leech", "martyr", "recall", "execution", "infusion", "command"];
+  var DAMAGE_ATTRIBUTES = /* @__PURE__ */ new Set(["acid", "bolt", "fire", "fire-ball", "masterful", "magma", "soul"]);
   function validateDeck(deck) {
     if (!Array.isArray(deck) || deck.length === 0) {
       throw new Error("A deck must contain at least one card.");
@@ -296,13 +425,16 @@
       currentPlayer: startingPlayer2,
       winner: null,
       pendingDrawOffer: null,
+      pendingDeflection: null,
       turn: 1,
       noProgressTurns: 0,
       turnHadProgress: false,
       lastRoll: null,
       lastDeflections: [],
       lastNecroticRolls: [],
+      lastPhoenixRolls: [],
       lastSplinterTriggers: [],
+      lastLeechHeals: [],
       nextSpectralEffectId: 0
     };
   }
@@ -317,7 +449,7 @@
     const rune = game2.players[playerIndex].slots[slot];
     if (!rune) return false;
     const sources = game2.players.flatMap((player, owner) => player.slots.slice(0, FRONTLINE_SIZE).flatMap((source) => source && getRuneAttribute(source) === "spectral" && source.spectralEffect ? [{ owner, rune: source, ...source.spectralEffect }] : []));
-    const lightningDisabled = new Set(game2.players.flatMap((player, owner) => player.slots.filter((target) => target?.lightningDisabled).map((target) => `${owner}:${target.stack[0].id}`)));
+    const lightningDisabled = new Set(game2.players.flatMap((player, owner) => player.slots.filter((target) => target?.lightningDisabledThroughTurn >= game2.turn).map((target) => `${owner}:${target.stack[0].id}`)));
     sources.sort((a, b) => b.order - a.order);
     for (let mask = (1 << sources.length) - 1; mask >= 0; mask--) {
       const active = (index) => Boolean(mask & 1 << sources.length - 1 - index);
@@ -327,6 +459,13 @@
       }
     }
     throw new Error("Could not resolve Spectral effects.");
+  }
+  function disableThroughNextTurn(game2, rune, owner) {
+    const turnsUntilNextOwnerTurn = owner === game2.currentPlayer ? 2 : 1;
+    rune.lightningDisabledThroughTurn = Math.max(
+      rune.lightningDisabledThroughTurn ?? 0,
+      game2.turn + turnsUntilNextOwnerTurn
+    );
   }
   function refreshAmplifications(game2) {
     for (const player of game2.players) {
@@ -347,8 +486,9 @@
   function getRuneStats(rune, owner) {
     const card = currentCard(rune);
     const attribute = getRuneAttribute(rune);
-    const healthBonus = attribute === "brawling" ? 1 : attribute === "fortitude" ? 2 : 0;
-    let attackBonus = (attribute === "fortitude" ? -1 : attribute === "piercing-major" ? 1 : 0) + (rune.amplification ?? 0);
+    const healthBonus = attribute === "brawling" || attribute === "berserk" ? 1 : attribute === "fortitude" ? 2 : 0;
+    let attackBonus = (attribute === "fortitude" ? -1 : attribute === "piercing-major" ? 1 : 0) + (rune.amplification ?? 0) + (rune.infusionAttackBonus ?? 0);
+    if (attribute === "berserk") attackBonus += rune.damage;
     if (attribute === "uprising") {
       if (!owner || !Array.isArray(owner.slots)) {
         throw new Error("Uprising's stats require its owner.");
@@ -363,27 +503,45 @@
       attack: Math.max(0, card.rank + attackBonus)
     };
   }
-  function defendingDamage(source, target, damage) {
+  function guardianReduction(game2, targetPlayer, targetSlot) {
+    if (targetSlot < FRONTLINE_SIZE) return 0;
+    return game2.players[targetPlayer].slots.reduce((count, rune, slot) => count + (rune && getRuneAttribute(rune) === "guardian" && !isRuneDisabled(game2, targetPlayer, slot) ? 1 : 0), 0);
+  }
+  function defendingDamage(source, target, damage, game2, targetPlayer, targetSlot) {
     const attribute = getRuneAttribute(source);
     const ignoresReduction = attribute === "piercing" || attribute === "piercing-major";
-    const reduction = getRuneAttribute(target) === "hardened" && !ignoresReduction ? 1 : 0;
+    const reduction = ignoresReduction ? 0 : (getRuneAttribute(target) === "hardened" ? 1 : 0) + guardianReduction(game2, targetPlayer, targetSlot);
     return Math.max(0, damage - reduction);
   }
-  function combatDamage(source, target, sourceOwner, targetIsDefending) {
+  function combatDamage(source, target, sourceOwner, targetIsDefending, game2, targetPlayer, targetSlot) {
     const card = currentCard(source);
     const attribute = getRuneAttribute(source);
-    const attack = targetIsDefending && getRuneAttribute(target) === "intangible" ? card.rank - (attribute === "fortitude" ? 1 : 0) - (source.haunted ? 1 : 0) + (source.amplification ?? 0) : getRuneStats(source, sourceOwner).attack;
-    return targetIsDefending ? defendingDamage(source, target, attack) : Math.max(0, attack);
+    const ambushBonus = targetIsDefending && attribute === "ambush" && !target.acted ? 1 : 0;
+    const attack = targetIsDefending && getRuneAttribute(target) === "intangible" ? card.rank - (attribute === "fortitude" ? 1 : 0) - (source.haunted ? 1 : 0) + (source.amplification ?? 0) + (source.infusionAttackBonus ?? 0) : getRuneStats(source, sourceOwner).attack + ambushBonus;
+    return targetIsDefending ? defendingDamage(source, target, attack, game2, targetPlayer, targetSlot) : Math.max(0, attack);
   }
   function getAttackDamage(game2, sourceSlot, targetSlot) {
     const source = game2.players[game2.currentPlayer].slots[sourceSlot];
     const target = game2.players[1 - game2.currentPlayer].slots[targetSlot];
     if (!source || !target) throw new Error("Attack damage requires an occupied source and target.");
-    const lightning = getRuneAttribute(source) === "lightning" && getRuneAttribute(target) !== "intangible";
-    return {
-      damage: lightning ? defendingDamage(source, target, 1) : combatDamage(source, target, game2.players[game2.currentPlayer], true),
+    const execution = getRuneAttribute(source) === "execution" && target.damage > 0 && getRuneAttribute(target) !== "intangible";
+    const lightningDisableTarget = getRuneAttribute(source) === "lightning" && getRuneAttribute(target) !== "intangible";
+    const lightningDisableAttacker = getRuneAttribute(target) === "lightning" && getRuneAttribute(source) !== "intangible";
+    const preview = execution ? { damage: 0, deflectable: isDeflecting(target), execution: true } : {
+      damage: combatDamage(
+        source,
+        target,
+        game2.players[game2.currentPlayer],
+        true,
+        game2,
+        1 - game2.currentPlayer,
+        targetSlot
+      ),
       deflectable: isDeflecting(target)
     };
+    if (lightningDisableTarget) preview.lightningDisableTarget = true;
+    if (lightningDisableAttacker) preview.lightningDisableAttacker = true;
+    return preview;
   }
   function getAttributeDamagePreview(game2, sourceSlot, targetPlayer, targetSlot, selectedTargets = []) {
     const source = game2.players[game2.currentPlayer].slots[sourceSlot];
@@ -418,7 +576,7 @@
         return null;
     }
     return {
-      damage: defendingDamage(source, target, damage),
+      damage: defendingDamage(source, target, damage, game2, targetPlayer, targetSlot),
       variable,
       deflectable: isDeflecting(target)
     };
@@ -439,29 +597,147 @@
     rune.temporaryHealth -= absorbed;
     rune.damage += damage - absorbed;
   }
-  function incomingDamage(game2, target, source, damage, targetPlayer, targetSlot, rollDie) {
-    if (!isDeflecting(target)) return damage;
+  function restoreLeechHealth(game2, rune, owner, slot, damageDealt) {
+    if (damageDealt <= 0 || getRuneAttribute(rune) !== "leech" || getRuneStats(rune, game2.players[owner]).health <= 0 || rune.damage <= 0) return;
+    rune.damage--;
+    game2.lastLeechHeals.push({ player: owner, slot, card: currentCard(rune).name });
+  }
+  function incomingDamage(game2, target, source, damage, targetPlayer, targetSlot, rollDie, deflect = true) {
+    if (!isDeflecting(target) || !deflect) return damage;
     const value2 = rollSixSided(rollDie);
     const success = value2 >= 4;
     const returned = success && (getRuneAttribute(target) === "deflecting-major" || value2 === 6) ? 1 : 0;
-    dealDamage(source, returned);
-    game2.lastDeflections.push({ card: currentCard(target).name, targetPlayer, targetSlot, value: value2, success, returned });
+    const sourcePlayer = game2.players.findIndex((player) => player.slots.includes(source));
+    const sourceSlot = sourcePlayer < 0 ? -1 : game2.players[sourcePlayer].slots.indexOf(source);
+    const returnedDamage = sourcePlayer >= 0 ? Math.max(0, returned - guardianReduction(game2, sourcePlayer, sourceSlot)) : returned;
+    dealDamage(source, returnedDamage);
+    game2.lastDeflections.push({ card: currentCard(target).name, targetPlayer, targetSlot, value: value2, success, returned: returnedDamage });
     return success ? 0 : damage;
   }
   function incomingAttributeDamage(game2, target, source, damage, targetPlayer, targetSlot, rollDie) {
-    return incomingDamage(game2, target, source, defendingDamage(source, target, damage), targetPlayer, targetSlot, rollDie);
+    if (targetSlot >= FRONTLINE_SIZE && getRuneAttribute(target) === "cloak") return 0;
+    return incomingDamage(
+      game2,
+      target,
+      source,
+      defendingDamage(source, target, damage, game2, targetPlayer, targetSlot),
+      targetPlayer,
+      targetSlot,
+      rollDie
+    );
+  }
+  function resolveAttack(game2, attackerPlayer, action, deflect, rollDie, destroy) {
+    const defenderPlayer = 1 - attackerPlayer;
+    const player = game2.players[attackerPlayer];
+    const opponent = game2.players[defenderPlayer];
+    const attacker = player.slots[action.slot];
+    const defender = opponent.slots[action.target];
+    delete attacker.commandedActionAvailable;
+    attacker.acted = true;
+    attacker.actionUsedThisTurn = true;
+    if (getRuneAttribute(attacker) === "frenzy") {
+      attacker.attacksUsed = (attacker.attacksUsed ?? 0) + 1;
+    }
+    const execution = getRuneAttribute(attacker) === "execution" && defender.damage > 0 && getRuneAttribute(defender) !== "intangible";
+    if (execution) {
+      let prevented = false;
+      if (deflect && isDeflecting(defender)) {
+        incomingDamage(game2, defender, attacker, 0, defenderPlayer, action.target, rollDie);
+        prevented = game2.lastDeflections.at(-1).success;
+      }
+      if (!prevented) {
+        if (getRuneAttribute(defender) === "lightning" && getRuneAttribute(attacker) !== "intangible") {
+          disableThroughNextTurn(game2, attacker, attackerPlayer);
+        }
+        if (getRuneAttribute(defender) === "haunting" && getRuneStats(attacker, player).health > 0) {
+          attacker.haunted = true;
+        }
+        destroy(defenderPlayer, action.target);
+      }
+      if (getRuneStats(attacker, player).health <= 0) destroy(attackerPlayer, action.slot);
+      updateWinner(game2);
+      return;
+    }
+    const lightningAttacks = getRuneAttribute(attacker) === "lightning" && getRuneAttribute(defender) !== "intangible";
+    const lightningDefends = getRuneAttribute(defender) === "lightning" && getRuneAttribute(attacker) !== "intangible";
+    const damageToAttacker = deflect ? 0 : combatDamage(defender, attacker, opponent, false, game2, attackerPlayer, action.slot);
+    const damageToDefender = incomingDamage(
+      game2,
+      defender,
+      attacker,
+      combatDamage(attacker, defender, player, true, game2, defenderPlayer, action.target),
+      defenderPlayer,
+      action.target,
+      rollDie,
+      deflect
+    );
+    const lightningAttackDeflected = lightningAttacks && game2.lastDeflections.some((roll) => roll.success && roll.targetPlayer === defenderPlayer && roll.targetSlot === action.target);
+    if (lightningAttacks && !lightningAttackDeflected) {
+      disableThroughNextTurn(game2, defender, defenderPlayer);
+    }
+    if (lightningDefends) disableThroughNextTurn(game2, attacker, attackerPlayer);
+    const backSlot = action.target + FRONTLINE_SIZE;
+    const backRune = getRuneAttribute(attacker) === "powerful" ? opponent.slots[backSlot] : null;
+    dealDamage(attacker, damageToAttacker);
+    dealDamage(defender, damageToDefender);
+    if (backRune && getRuneAttribute(backRune) !== "intangible") {
+      dealDamage(backRune, incomingAttributeDamage(game2, backRune, attacker, 1, defenderPlayer, backSlot, rollDie));
+    }
+    const splinterHits = [];
+    function splinterDamage(source, sourcePlayer, targetPlayer, excludedSlot) {
+      game2.lastSplinterTriggers.push(sourcePlayer);
+      const owner = game2.players[targetPlayer];
+      for (let slot = 0; slot < SLOT_COUNT; slot++) {
+        const target = owner.slots[slot];
+        if (!target || slot === excludedSlot || getRuneAttribute(target) === "intangible") continue;
+        dealDamage(target, incomingAttributeDamage(game2, target, source, 1, targetPlayer, slot, rollDie));
+        splinterHits.push({ source, sourcePlayer, target, targetPlayer, slot });
+      }
+    }
+    if (getRuneAttribute(attacker) === "splinter" && damageToDefender > 0) {
+      splinterDamage(attacker, attackerPlayer, defenderPlayer, action.target);
+    }
+    if (getRuneAttribute(defender) === "splinter" && damageToAttacker > 0) {
+      splinterDamage(defender, defenderPlayer, attackerPlayer, action.slot);
+    }
+    restoreLeechHealth(game2, attacker, attackerPlayer, action.slot, damageToDefender);
+    restoreLeechHealth(game2, defender, defenderPlayer, action.target, damageToAttacker);
+    const attackerDestroyed = getRuneStats(attacker, player).health <= 0;
+    const defenderDestroyed = getRuneStats(defender, opponent).health <= 0;
+    const backDestroyed = backRune && getRuneStats(backRune, opponent).health <= 0;
+    if (!attackerDestroyed && (defenderDestroyed && getRuneAttribute(defender) === "haunting" || backDestroyed && getRuneAttribute(backRune) === "haunting")) {
+      attacker.haunted = true;
+    }
+    if (!defenderDestroyed && getRuneAttribute(defender) !== "intangible" && attackerDestroyed && getRuneAttribute(attacker) === "haunting") {
+      defender.haunted = true;
+    }
+    for (const hit of splinterHits) {
+      if (getRuneStats(hit.source, game2.players[hit.sourcePlayer]).health > 0 && getRuneStats(hit.target, game2.players[hit.targetPlayer]).health <= 0 && getRuneAttribute(hit.target) === "haunting") {
+        hit.source.haunted = true;
+      }
+    }
+    for (const hit of splinterHits.sort((a, b) => b.slot - a.slot)) {
+      if (getRuneStats(hit.target, game2.players[hit.targetPlayer]).health <= 0) {
+        destroy(hit.targetPlayer, hit.slot);
+      }
+    }
+    if (backDestroyed) destroy(defenderPlayer, backSlot);
+    if (attackerDestroyed) destroy(attackerPlayer, action.slot);
+    if (defenderDestroyed) destroy(defenderPlayer, action.target);
+    updateWinner(game2);
   }
   function countRunes(slots) {
     return slots.filter(Boolean).length;
   }
-  function canPlace(slots, slot) {
-    return !slots[slot] && (slot < FRONTLINE_SIZE || Boolean(slots[slot - FRONTLINE_SIZE]));
+  function canPlace(slots, slot, card) {
+    return !slots[slot] && (slot < FRONTLINE_SIZE || Boolean(slots[slot - FRONTLINE_SIZE]) || card.attribute === "phantom");
   }
   function moveSlots(slots, from, to) {
-    if (slots[to]?.stunned) return null;
+    if (slots[from]?.snared || slots[to]?.stunned || slots[to]?.snared) return null;
     const result = [...slots];
     [result[from], result[to]] = [result[to], result[from]];
-    if (to >= FRONTLINE_SIZE && !result[to - FRONTLINE_SIZE]) {
+    if (from < FRONTLINE_SIZE && !result[from] && result[from + FRONTLINE_SIZE]?.snared) return null;
+    if (to >= FRONTLINE_SIZE && !result[to - FRONTLINE_SIZE] && getRuneAttribute(result[to]) !== "phantom") {
       return null;
     }
     if (from < FRONTLINE_SIZE && !result[from] && result[from + FRONTLINE_SIZE]) {
@@ -469,7 +745,7 @@
       result[from + FRONTLINE_SIZE] = null;
     }
     for (let column = 0; column < FRONTLINE_SIZE; column++) {
-      if (result[column + FRONTLINE_SIZE] && !result[column]) {
+      if (result[column + FRONTLINE_SIZE] && !result[column] && getRuneAttribute(result[column + FRONTLINE_SIZE]) !== "phantom") {
         return null;
       }
     }
@@ -491,6 +767,10 @@
   }
   function getLegalActions(game2) {
     if (game2.winner !== null) return [];
+    if (game2.pendingDeflection) {
+      const player2 = game2.pendingDeflection.player;
+      return [{ type: "acceptAttack", player: player2 }, { type: "deflectAttack", player: player2 }];
+    }
     if (game2.pendingDrawOffer !== null) {
       const player2 = 1 - game2.pendingDrawOffer;
       return [{ type: "acceptDraw", player: player2 }, { type: "declineDraw", player: player2 }];
@@ -498,7 +778,8 @@
     const player = game2.players[game2.currentPlayer];
     const opponent = game2.players[1 - game2.currentPlayer];
     const enemyTargets = opponent.slots.flatMap((target, slot) => target ? [slot] : []);
-    const effectiveTargets = enemyTargets.filter((slot) => getRuneAttribute(opponent.slots[slot]) !== "intangible");
+    const attributeTargets = enemyTargets.filter((slot) => slot < FRONTLINE_SIZE || getRuneAttribute(opponent.slots[slot]) !== "cloak");
+    const effectiveTargets = attributeTargets.filter((slot) => getRuneAttribute(opponent.slots[slot]) !== "intangible");
     const actions = [];
     for (let slot = 0; slot < SLOT_COUNT; slot++) {
       if (!player.slots[slot]?.focusChoicePending) continue;
@@ -515,7 +796,7 @@
       for (const card of player.hand) {
         if (card.rank !== 1) continue;
         for (let slot = 0; slot < SLOT_COUNT; slot++) {
-          if (canPlace(player.slots, slot)) {
+          if (canPlace(player.slots, slot, card)) {
             actions.push({ type: "play", cardId: card.id, slot });
           }
         }
@@ -524,7 +805,7 @@
     for (let slot = 0; slot < SLOT_COUNT; slot++) {
       const rune = player.slots[slot];
       if (!rune || rune.stunned || isRuneDisabled(game2, game2.currentPlayer, slot)) continue;
-      if (!rune.moved) {
+      if (!rune.moved && !rune.snared) {
         for (let target = 0; target < SLOT_COUNT; target++) {
           if (target !== slot && !isRuneDisabled(game2, game2.currentPlayer, target) && moveSlots(player.slots, slot, target)) {
             actions.push({ type: "move", from: slot, to: target });
@@ -533,6 +814,9 @@
       }
       const top = currentCard(rune);
       const attribute = getRuneAttribute(rune);
+      const secondFrenzyAttack = attribute === "frenzy" && rune.attacksUsed === 1;
+      const frenzyCanAttack = attribute !== "frenzy" || (rune.attacksUsed ?? 0) < 2 || rune.commandedActionAvailable;
+      const frenzyHasNotSpentActionWithoutAttacking = attribute !== "frenzy" || (rune.attacksUsed ?? 0) > 0 || !rune.actionUsedThisTurn;
       const firstTurnUpgrade = ALLOW_SECOND_PLAYER_FIRST_TURN_UPGRADE && game2.turn === 2 && player.turnsStarted === 0 && rune.stack.length === 1 && top.rank === 1;
       if (!rune.acted || firstTurnUpgrade) {
         for (const card of player.hand) {
@@ -541,7 +825,7 @@
           }
         }
       }
-      if (rune.acted) continue;
+      if (rune.acted && !secondFrenzyAttack) continue;
       if (attribute === "mending") {
         for (let targetSlot = 0; targetSlot < SLOT_COUNT; targetSlot++) {
           const target = player.slots[targetSlot];
@@ -557,14 +841,29 @@
           }
         }
       }
-      if (attribute === "amplifying") {
+      if (attribute === "amplifying" || attribute === "infusion") {
         for (let targetSlot = 0; targetSlot < SLOT_COUNT; targetSlot++) {
           if (targetSlot !== slot && player.slots[targetSlot]) {
             actions.push({ type: "attribute", slot, targetPlayer: game2.currentPlayer, targetSlot });
           }
         }
       }
-      if (attribute === "fire" || attribute === "magma" || attribute === "soul" || attribute === "spectral" && slot < FRONTLINE_SIZE) {
+      if (attribute === "martyr" || attribute === "command") {
+        for (let targetSlot = 0; targetSlot < SLOT_COUNT; targetSlot++) {
+          const target = player.slots[targetSlot];
+          if (targetSlot !== slot && target?.actionUsedThisTurn && target.acted) {
+            actions.push({ type: "attribute", slot, targetPlayer: game2.currentPlayer, targetSlot });
+          }
+        }
+      }
+      if (attribute === "recall") {
+        for (let targetSlot = 0; targetSlot < SLOT_COUNT; targetSlot++) {
+          if (targetSlot !== slot && player.slots[targetSlot]) {
+            actions.push({ type: "attribute", slot, targetPlayer: game2.currentPlayer, targetSlot });
+          }
+        }
+      }
+      if (attribute === "snare" || attribute === "fire" || attribute === "magma" || attribute === "soul" || attribute === "spectral" && slot < FRONTLINE_SIZE) {
         for (const targetSlot of effectiveTargets) {
           actions.push({ type: "attribute", slot, targetPlayer: 1 - game2.currentPlayer, targetSlot });
         }
@@ -578,11 +877,11 @@
       }
       if (attribute === "fire-ball") {
         for (const targetSlot of effectiveTargets) {
-          const targetSlots = enemyTargets.filter((other) => other !== targetSlot);
+          const targetSlots = attributeTargets.filter((other) => other !== targetSlot);
           actions.push({ type: "attribute", slot, targetPlayer: 1 - game2.currentPlayer, targetSlot, targetSlots });
         }
       }
-      if (slot < FRONTLINE_SIZE) {
+      if (slot < FRONTLINE_SIZE && frenzyCanAttack && frenzyHasNotSpentActionWithoutAttacking && (!rune.acted || secondFrenzyAttack)) {
         if (attribute === "masterful") {
           const maxCost = Math.min(4, getRuneStats(rune, player).health);
           for (let amount = 1; amount <= maxCost && effectiveTargets.length; amount++) {
@@ -611,9 +910,20 @@
     const index = player.hand.findIndex((card) => card.id === cardId);
     return player.hand.splice(index, 1)[0];
   }
-  function destroyRune(player, slot) {
+  function destroyRune(player, slot, phoenixReturnsToHand = false) {
     const rune = player.slots[slot];
-    player.destroyed.push(...rune.stack);
+    const returnedCard = phoenixReturnsToHand ? rune.stack.at(-1) : null;
+    player.destroyed.push(...rune.stack.filter((card) => card !== returnedCard));
+    if (returnedCard) player.hand.push(returnedCard);
+    player.slots[slot] = null;
+    if (slot < FRONTLINE_SIZE && player.slots[slot + FRONTLINE_SIZE]) {
+      player.slots[slot] = player.slots[slot + FRONTLINE_SIZE];
+      player.slots[slot + FRONTLINE_SIZE] = null;
+    }
+  }
+  function returnRuneToHand(player, slot) {
+    const rune = player.slots[slot];
+    player.hand.push(...rune.stack);
     player.slots[slot] = null;
     if (slot < FRONTLINE_SIZE && player.slots[slot + FRONTLINE_SIZE]) {
       player.slots[slot] = player.slots[slot + FRONTLINE_SIZE];
@@ -636,12 +946,21 @@
       rune.temporaryHealth,
       Boolean(rune.haunted),
       Boolean(rune.stunned),
-      Boolean(rune.lightningDisabled),
+      Boolean(rune.snared),
+      rune.lightningDisabledThroughTurn ?? null,
       rune.focusCopy ?? null,
       rune.spectralEffect?.target ?? null,
       rune.amplifies ?? null,
-      rune.amplification ?? 0
+      rune.amplification ?? 0,
+      rune.infusionAttackBonus ?? 0,
+      Boolean(rune.commandedActionAvailable)
     ]).sort((a, b) => a[0].localeCompare(b[0])));
+  }
+  function actionCouldDealDamage(game2, action) {
+    if (action.type === "attack") return true;
+    if (action.type === "acceptAttack" || action.type === "deflectAttack") return true;
+    if (action.type !== "attribute") return false;
+    return DAMAGE_ATTRIBUTES.has(getRuneAttribute(game2.players[game2.currentPlayer].slots[action.slot]));
   }
   function isSpectralStalemate(game2) {
     if (game2.players.some((player) => countRunes(player.slots) !== 1 || player.hand.some((card) => card.rank === 1))) return false;
@@ -653,7 +972,7 @@
       const source = player.slots[sourceSlot];
       const target = opponent.slots[targetSlot];
       if (sourceSlot >= FRONTLINE_SIZE || targetSlot >= FRONTLINE_SIZE || currentCard(source).attribute !== "spectral" || source.spectralEffect?.target !== target.stack[0].id || currentCard(target).attribute === "focus" || source.stunned || isRuneDisabled(game2, owner, sourceSlot) || !isRuneDisabled(game2, 1 - owner, targetSlot) || isDeflecting(target) || player.hand.some((card) => canUpgradeCard(currentCard(source), card, getRuneAttribute(source)))) continue;
-      if (combatDamage(target, source, opponent, false) >= getRuneStats(source, player).health && combatDamage(source, target, player, true) < getRuneStats(target, opponent).health) return true;
+      if (combatDamage(target, source, opponent, false, game2, owner, sourceSlot) >= getRuneStats(source, player).health && combatDamage(source, target, player, true, game2, 1 - owner, targetSlot) < getRuneStats(target, opponent).health) return true;
     }
     return false;
   }
@@ -669,12 +988,21 @@
     next.lastRoll = null;
     next.lastDeflections = [];
     next.lastNecroticRolls = [];
+    next.lastPhoenixRolls = [];
     next.lastSplinterTriggers = [];
+    next.lastLeechHeals = [];
     const destroyedRunes = [];
     function destroy(playerIndex, slot) {
       const owner = next.players[playerIndex];
-      destroyedRunes.push({ playerIndex, card: currentCard(owner.slots[slot]).name });
-      destroyRune(owner, slot);
+      const rune = owner.slots[slot];
+      destroyedRunes.push({ playerIndex, card: currentCard(rune).name });
+      let phoenixReturnsToHand = false;
+      if (getRuneAttribute(rune) === "phoenix") {
+        const value2 = rollSixSided(rollDie);
+        phoenixReturnsToHand = value2 >= 4;
+        next.lastPhoenixRolls.push({ player: playerIndex, slot, card: currentCard(rune).name, value: value2, success: phoenixReturnsToHand });
+      }
+      destroyRune(owner, slot, phoenixReturnsToHand);
     }
     switch (action.type) {
       case "concede": {
@@ -715,7 +1043,7 @@
       }
       case "play": {
         const card = takeCard(player, action.cardId);
-        player.slots[action.slot] = { stack: [card], damage: 0, temporaryHealth: 0, amplification: 0, moved: false, acted: true, haunted: false, stunned: false };
+        player.slots[action.slot] = { stack: [card], damage: 0, temporaryHealth: 0, amplification: 0, infusionAttackBonus: 0, moved: false, acted: true, actionUsedThisTurn: false, haunted: false, stunned: false };
         break;
       }
       case "move": {
@@ -731,10 +1059,12 @@
         const rune = player.slots[action.slot];
         delete rune.spectralEffect;
         delete rune.amplifies;
+        delete rune.commandedActionAvailable;
         delete rune.focusCopy;
         delete rune.focusChoicePending;
         rune.stack.push(takeCard(player, action.cardId));
         rune.acted = true;
+        rune.actionUsedThisTurn = true;
         if (getRuneStats(rune, player).health <= 0) {
           destroy(next.currentPlayer, action.slot);
           updateWinner(next);
@@ -744,7 +1074,9 @@
       case "attribute": {
         const source = player.slots[action.slot];
         const attribute = getRuneAttribute(source);
+        delete source.commandedActionAvailable;
         source.acted = true;
+        source.actionUsedThisTurn = true;
         if (attribute === "masterful") {
           dealDamage(source, action.targetSlots.length);
           for (const slot of action.targetSlots) {
@@ -804,7 +1136,35 @@
           updateWinner(next);
           break;
         }
+        if (attribute === "martyr") {
+          player.slots[action.targetSlot].acted = false;
+          destroy(next.currentPlayer, action.slot);
+          updateWinner(next);
+          break;
+        }
+        if (attribute === "command") {
+          const target2 = player.slots[action.targetSlot];
+          target2.acted = false;
+          target2.commandedActionAvailable = true;
+          break;
+        }
+        if (attribute === "recall") {
+          returnRuneToHand(player, action.targetSlot);
+          updateWinner(next);
+          break;
+        }
         const target = next.players[action.targetPlayer].slots[action.targetSlot];
+        if (attribute === "infusion") {
+          target.infusionAttackBonus = (target.infusionAttackBonus ?? 0) + 2;
+          dealDamage(source, 1);
+          if (getRuneStats(source, player).health <= 0) destroy(next.currentPlayer, action.slot);
+          updateWinner(next);
+          break;
+        }
+        if (attribute === "snare") {
+          target.snared = true;
+          break;
+        }
         if (attribute === "mending") {
           target.damage--;
           break;
@@ -847,87 +1207,75 @@
         break;
       }
       case "attack": {
-        let splinterDamage = function(source, sourcePlayer, targetPlayer, excludedSlot) {
-          next.lastSplinterTriggers.push(sourcePlayer);
-          const owner = next.players[targetPlayer];
-          for (let slot = 0; slot < SLOT_COUNT; slot++) {
-            const target = owner.slots[slot];
-            if (!target || slot === excludedSlot || getRuneAttribute(target) === "intangible") continue;
-            dealDamage(target, incomingAttributeDamage(next, target, source, 1, targetPlayer, slot, rollDie));
-            splinterHits.push({ source, sourcePlayer, target, targetPlayer, slot });
-          }
-        };
-        const attacker = player.slots[action.slot];
+        const attackerPlayer = next.currentPlayer;
         const defender = opponent.slots[action.target];
-        attacker.acted = true;
-        const lightning = getRuneAttribute(attacker) === "lightning" && getRuneAttribute(defender) !== "intangible";
-        const damageToAttacker = isDeflecting(defender) ? 0 : combatDamage(defender, attacker, opponent, false);
-        const damageToDefender = incomingDamage(
+        if (isDeflecting(defender)) {
+          next.pendingDeflection = {
+            attackerPlayer,
+            player: 1 - attackerPlayer,
+            slot: action.slot,
+            target: action.target
+          };
+          next.currentPlayer = 1 - attackerPlayer;
+        } else {
+          resolveAttack(next, attackerPlayer, action, false, rollDie, destroy);
+        }
+        break;
+      }
+      case "acceptAttack":
+      case "deflectAttack": {
+        const pending = next.pendingDeflection;
+        next.pendingDeflection = null;
+        next.currentPlayer = pending.attackerPlayer;
+        resolveAttack(
           next,
-          defender,
-          attacker,
-          lightning ? defendingDamage(attacker, defender, 1) : combatDamage(attacker, defender, player, true),
-          1 - next.currentPlayer,
-          action.target,
-          rollDie
+          pending.attackerPlayer,
+          { slot: pending.slot, target: pending.target },
+          action.type === "deflectAttack",
+          rollDie,
+          destroy
         );
-        const backSlot = action.target + FRONTLINE_SIZE;
-        const backRune = getRuneAttribute(attacker) === "powerful" ? opponent.slots[backSlot] : null;
-        dealDamage(attacker, damageToAttacker);
-        dealDamage(defender, damageToDefender);
-        if (lightning && !next.lastDeflections.some((roll) => roll.success)) defender.lightningDisabled = true;
-        if (backRune && getRuneAttribute(backRune) !== "intangible") {
-          dealDamage(backRune, incomingAttributeDamage(next, backRune, attacker, 1, 1 - next.currentPlayer, backSlot, rollDie));
-        }
-        const splinterHits = [];
-        if (getRuneAttribute(attacker) === "splinter" && damageToDefender > 0) {
-          splinterDamage(attacker, next.currentPlayer, 1 - next.currentPlayer, action.target);
-        }
-        if (getRuneAttribute(defender) === "splinter" && damageToAttacker > 0) {
-          splinterDamage(defender, 1 - next.currentPlayer, next.currentPlayer, action.slot);
-        }
-        const attackerDestroyed = getRuneStats(attacker, player).health <= 0;
-        const defenderDestroyed = getRuneStats(defender, opponent).health <= 0;
-        const backDestroyed = backRune && getRuneStats(backRune, opponent).health <= 0;
-        if (!attackerDestroyed && (defenderDestroyed && getRuneAttribute(defender) === "haunting" || backDestroyed && getRuneAttribute(backRune) === "haunting")) {
-          attacker.haunted = true;
-        }
-        if (!defenderDestroyed && getRuneAttribute(defender) !== "intangible" && attackerDestroyed && getRuneAttribute(attacker) === "haunting") {
-          defender.haunted = true;
-        }
-        for (const hit of splinterHits) {
-          if (getRuneStats(hit.source, next.players[hit.sourcePlayer]).health > 0 && getRuneStats(hit.target, next.players[hit.targetPlayer]).health <= 0 && getRuneAttribute(hit.target) === "haunting") {
-            hit.source.haunted = true;
-          }
-        }
-        for (const hit of splinterHits.sort((a, b) => b.slot - a.slot)) {
-          if (getRuneStats(hit.target, next.players[hit.targetPlayer]).health <= 0) {
-            destroy(hit.targetPlayer, hit.slot);
-          }
-        }
-        if (backDestroyed) destroy(1 - next.currentPlayer, backSlot);
-        if (attackerDestroyed) destroy(next.currentPlayer, action.slot);
-        if (defenderDestroyed) destroy(1 - next.currentPlayer, action.target);
-        updateWinner(next);
         break;
       }
       case "endTurn": {
         for (const rune of player.slots) {
           if (rune) {
             rune.stunned = false;
-            delete rune.lightningDisabled;
+            delete rune.snared;
           }
         }
         player.turnsStarted++;
         next.currentPlayer = 1 - next.currentPlayer;
         next.turn++;
+        for (const owner of next.players) {
+          for (const rune of owner.slots) {
+            if (rune && rune.lightningDisabledThroughTurn !== void 0 && rune.lightningDisabledThroughTurn < next.turn) {
+              delete rune.lightningDisabledThroughTurn;
+            }
+          }
+        }
         const incoming = next.players[next.currentPlayer];
         for (const rune of incoming.slots) {
           if (rune) {
             delete rune.spectralEffect;
             delete rune.amplifies;
+            delete rune.infusionAttackBonus;
+            delete rune.commandedActionAvailable;
             rune.moved = false;
             rune.acted = false;
+            rune.actionUsedThisTurn = false;
+            delete rune.attacksUsed;
+          }
+        }
+        for (let slot = 0; slot < SLOT_COUNT; slot++) {
+          const rune = incoming.slots[slot];
+          if (!rune) continue;
+          const attribute = getRuneAttribute(rune);
+          if (attribute === "growth") {
+            if (rune.damage > 0) rune.damage--;
+            else rune.temporaryHealth++;
+          } else if (attribute === "regrowth" && slot >= FRONTLINE_SIZE && rune.damage > 0) {
+            rune.damage--;
           }
         }
         const destroyedFocusSlots = [];
@@ -965,11 +1313,11 @@
       }
     }
     refreshAmplifications(next);
-    if (next.winner === null && isSpectralStalemate(next)) {
+    if (next.winner === null && !next.pendingDeflection && isSpectralStalemate(next)) {
       next.winner = "draw";
       next.drawReason = "spectral-stalemate";
     }
-    const progressed = game2.turnHadProgress || JSON.stringify(progressSnapshot(game2)) !== JSON.stringify(progressSnapshot(next)) || next.lastDeflections.some((roll) => roll.returned > 0);
+    const progressed = actionCouldDealDamage(game2, action) || game2.turnHadProgress || JSON.stringify(progressSnapshot(game2)) !== JSON.stringify(progressSnapshot(next)) || next.lastDeflections.some((roll) => roll.returned > 0);
     if (action.type === "endTurn") {
       next.noProgressTurns = progressed ? 0 : game2.noProgressTurns + 1;
       next.turnHadProgress = false;
@@ -1219,6 +1567,20 @@
     }))));
     return saved;
   }
+  function deleteSavedDeck(storage, name) {
+    if (typeof name !== "string" || !name.trim() || name.trim().length > 60) {
+      throw new Error("Enter a deck name of 1-60 characters.");
+    }
+    const saved = loadSavedDecks(storage);
+    const index = saved.findIndex((entry) => entry.name.toLowerCase() === name.trim().toLowerCase());
+    if (index < 0) throw new Error("A saved deck with that name does not exist.");
+    saved.splice(index, 1);
+    storage.setItem(STORAGE_KEY, JSON.stringify(saved.map((item) => ({
+      name: item.name,
+      cards: item.deck.map((card) => cardKeys.get(card))
+    }))));
+    return saved;
+  }
 
   // src/rune-rules.js
   var rulings = [
@@ -1237,11 +1599,11 @@
     [["intangible", "powerful"], "Powerful still damages the rune behind a defending Intangible. An Intangible behind the target is immune to that extra damage."],
     [["acid", "intangible"], "Acid uses an action to deal 1 damage to three different enemy runes, including backline runes, then destroys its source. It targets all eligible enemies if fewer than three are available. Intangible cannot be selected."],
     [["fire-ball", "intangible"], "Fire Ball uses an action to deal 2 damage to one enemy and 1 damage to up to three other enemies, including backline runes, then destroys its source. Intangible cannot be the main target and is immune to the automatic additional damage."],
-    [["deflecting", "deflecting-major", "piercing", "piercing-major", "powerful", "bolt", "fire", "magma", "acid", "fire-ball", "lightning", "soul", "splinter", "masterful"], "Deflecting and Deflecting Major roll a six-sided die when directly attacked or hit by a damaging attribute, including Powerful's extra damage. On 1-3 they take the damage and deal no normal combat damage. On 4+ they negate it; Deflecting returns 1 damage on 6, while Deflecting Major returns 1 on 4+. Piercing does not bypass deflection."],
+    [["deflecting", "deflecting-major", "piercing", "piercing-major", "powerful", "bolt", "fire", "magma", "acid", "fire-ball", "lightning", "soul", "splinter", "masterful"], "When directly attacked, Deflecting and Deflecting Major's owner chooses to deflect or take the normal attack, including retaliation. If deflecting, roll a six-sided die: on 1-3 they take the damage and deal no normal combat damage; on 4+ they negate it. Deflecting returns 1 damage on 6, while Deflecting Major returns 1 on 4+. Damaging attributes and extra hits still trigger deflection automatically. Piercing does not bypass deflection."],
     [["deflecting", "deflecting-major", "magma", "powerful", "acid", "fire-ball", "splinter", "masterful"], "Deflecting rolls only if Magma's own roll succeeds. Each hit Deflecting rune rolls separately, and all selected effects resolve even if returned damage destroys their source. Returned damage cannot itself be deflected. Powerful still damages the rune behind a successfully deflecting defender."],
     [["intangible", "deflecting", "deflecting-major"], "Intangible attacking Deflecting can have its attack negated and take returned damage; its combat immunity applies while defending."],
-    [["lightning", "hardened"], "When Lightning attacks, it deals 1 damage before defensive reductions instead of its normal attack damage, regardless of attack modifiers, and disables the target through the end of the target's next turn. The target still retaliates normally; Lightning is not destroyed by its attribute. Hardened reduces the damage but does not prevent the disable."],
-    [["lightning", "intangible", "deflecting", "deflecting-major"], "A successful deflection prevents both Lightning's damage and its disable. Defending Intangible ignores Lightning's attribute, so it takes normal combat damage instead and is not disabled."],
+    [["lightning", "hardened"], "Lightning deals normal combat and retaliation damage. When it attacks, it disables the defending rune; when it is attacked, it disables the attacking rune. The disable lasts through the end of the target's next full turn, even if Lightning is destroyed or the target was already taking its turn. Hardened reduces damage normally but does not prevent the disable."],
+    [["lightning", "intangible", "deflecting", "deflecting-major"], "A successful Deflecting roll against Lightning's attack prevents the attack damage and disable; a failed roll leaves both. Intangible is immune to Lightning's disable in either role. When defending Intangible is attacked by Lightning, it ignores Lightning's effect and takes normal combat damage."],
     [["soul", "intangible", "deflecting", "deflecting-major"], "Soul chooses an enemy target, including in the backline, before rolling a six-sided die. Intangible cannot be selected. On 3+ Soul gains 1 hit point even if damage is negated. Soul heals existing damage first, then gains unlimited temporary health above its normal maximum. Lost temporary health cannot be restored."],
     [["soul", "deflecting", "deflecting-major"], "Soul gains its hit point before taking any returned deflection damage."],
     [["necrotic", "haunting"], "Each surviving, enabled Necrotic rolls separately for every other friendly rune destroyed, including destruction by its own attribute or an upgrade. It does not roll for itself or for an ally destroyed simultaneously with it. On 3+ it creates a Haunting in its owner's hand, even beyond the deck construction limit."],
@@ -1258,7 +1620,23 @@
     [["focus"], "At the very start of each owner's turn, each enabled, non-stunned Focus chooses another friendly rune's attribute or none without using its action. The source may be in either row, disabled, or stunned, but cannot be another Focus. A newly upgraded Focus waits until its next turn."],
     [["focus"], "The copied attribute lasts until the next choice even if the source moves, upgrades, or is destroyed. Focus keeps its own name, rank, and colours and follows the copied attribute's normal restrictions and costs."],
     [["focus", "spectral", "lightning"], "Focus chooses no attribute automatically if it is disabled at the start of the turn. If changing or losing a copied health bonus reduces it to zero hit points, it is destroyed immediately; rechoosing the same health bonus can preserve it."],
-    [["focus", "spectral", "amplifying"], "Copied Spectral and Amplifying effects expire at the start of their owner's next turn even if Focus chooses the same attribute again."]
+    [["focus", "spectral", "amplifying"], "Copied Spectral and Amplifying effects expire at the start of their owner's next turn even if Focus chooses the same attribute again."],
+    [["growth"], "At the beginning of its owner's turn, Growth heals 1 damage if damaged; otherwise it gains 1 temporary hit point. Temporary hit points have no maximum and are lost before normal hit points."],
+    [["regrowth"], "At the beginning of its owner's turn, Regrowth heals 1 damage only while in the backline. It never grants temporary hit points; its maximum is its printed rank-based HP, which is 2 for Regrowth and remains Focus's own maximum when copied."],
+    [["leech"], "Leech restores 1 damage once per positive combat hit it deals, whether attacking or retaliating, regardless of how many damage points the hit causes. Damage absorbed by temporary HP counts, but a hit reduced to zero does not. Leech must survive the full combat exchange to heal; it cannot regain lost temporary HP. Focus copying Leech follows the same rules."],
+    [["martyr"], "Martyr uses its action from either row to destroy itself and refresh the action of another friendly rune that has already used an action this turn. Upgrading counts as using an action, but playing a rune does not. The refreshed action may be an attack, attribute, or upgrade; movement remains separate. Each Martyr can refresh an ally once, and multiple Martyrs may refresh the same ally again after it uses the refreshed action. The ally's normal restrictions still apply, including Frenzy's limit of two attacks per turn. Focus copying Martyr sacrifices Focus itself."],
+    [["command"], "Command uses its action from either row to refresh another friendly rune's action after it has already used an action this turn. Upgrading counts as using an action, but playing a rune does not. The target may take one additional attack, attribute, or upgrade; movement remains separate. Command does not sacrifice itself. Each Command can refresh an ally once, and another Command may refresh that ally after it uses the granted action. Command can let Frenzy exceed its usual two-attack limit by one attack for each Command-granted action. Focus copying Command follows the same rules."],
+    [["recall"], "Recall uses an action from either row to return another friendly rune from either row to its owner's hand. It returns every card in the rune's upgrade stack; Recall cannot target itself. If a frontline rune is returned, a friendly rune behind it immediately moves forward. Recalling a rune is not destruction, so it does not trigger destruction effects. Focus copying Recall follows the same rules."],
+    [["execution"], "Execution uses its normal attack action. If the target's current HP is below its current maximum HP and it is not defending Intangible, destroy it immediately without normal combat damage or retaliation. Losing temporary HP alone does not qualify because it also lowers current maximum HP. Deflecting rolls as usual: a successful roll prevents Execution, while a failed roll leaves the target to be destroyed. Normal destruction effects still resolve. Focus copying Execution follows the same rules."],
+    [["infusion", "intangible"], "Infusion uses its action from either row to give another friendly rune +2 attack until the start of its owner's next turn. It costs Infusion 1 HP, temporary HP first; it may spend its last HP and still resolve. Infusion bonuses stack and remain if Infusion leaves play or the target upgrades. The bonus applies while defending and even against defending Intangible. Focus copying Infusion follows the same rules."],
+    [["guardian"], "Each enabled Guardian reduces each instance of damage dealt to a friendly backline rune by 1. Guardians stack with each other and Hardened, and reduction cannot lower damage below zero. This applies to combat, attributes, secondary hits, and returned deflection damage, but not HP costs paid by the rune's owner. Piercing and Piercing Major ignore Guardian's damage reduction."],
+    [["ambush"], "Ambush adds 1 to its attack damage against a rune marked as not acted. A rune that acted during its owner's turn remains marked as acted during the opponent's following turn; the state resets when its owner starts their next turn. Moving alone does not count as acting. This bonus is only for the attacker's damage, and defending Intangible ignores it."],
+    [["berserk"], "Berserk has +1 maximum HP and gains +1 attack for each damage marker currently on it. Healing removes a damage marker and its attack bonus; damage absorbed by temporary HP does not count. Focus copying Berserk gets the same HP and attack bonuses."],
+    [["frenzy"], "Frenzy can attack twice per turn by default. Its first attack uses its action, then one second attack is allowed without granting another upgrade or attribute action. Command can grant further attacks beyond this limit, one per Command-granted action. Upgrading or using an action instead of attacking prevents its attacks that turn; movement remains separate. The attack count resets at the start of its owner's turn."],
+    [["snare"], "Snare uses an action from either row to target an eligible enemy rune in either row. The target cannot move or swap during its next turn, but may still attack, upgrade, and use attributes. The restriction ends when that turn ends; Intangible and a backline Cloak cannot be targeted."],
+    [["phoenix"], "When Phoenix is destroyed, roll a six-sided die. On 4+, return its top card to its owner's hand instead of the destroyed pile. It can return from any kind of destruction."],
+    [["phantom"], "Phantom may be played or moved into a backline slot even when the frontline slot in that column is empty. Other runes still require a frontline rune to remain in front of them."],
+    [["cloak"], "While Cloak is in the backline, enemy attributes cannot target it. This also prevents attribute damage that would otherwise reach it as a secondary target; attacks are unaffected."]
   ];
   var generalRuneRules = [
     "Each player can have up to four runes in play, including four in the frontline. Each backline rune needs a frontline rune directly in front of it.",
@@ -1268,7 +1646,7 @@
     "Damage remains when a rune upgrades. A multicolour rune matches any of its visible colours when upgrading.",
     "A deck may contain multiple copies of a card design, subject to the 24-rank deck limit.",
     "Players can end their turn early. A frontline rune may move away from its protected rune, which then moves forward. Friendly runes can swap positions; only the rune initiating the swap uses its movement.",
-    "A disabled rune cannot move, swap, upgrade, or act, but keeps its defensive effects. Lightning disables through the end of the target's next turn; Spectral's disable depends on its source."
+    "A disabled rune cannot move, swap, upgrade, or act, but keeps its defensive effects. Lightning disables through the end of the target's next full turn; Spectral's disable depends on its source."
   ];
   function rulesFor(attribute) {
     const rules = rulings.filter(([attributes]) => attributes.includes(attribute)).map(([, text]) => text);
@@ -1300,7 +1678,8 @@
       const disabled = rune.stunned || isRuneDisabled(game2, playerIndex, slot);
       const attribute = getRuneAttribute(rune);
       const ability = attribute === "intangible" || attribute === "deflecting-major" ? 1.5 : attribute === "magma" || attribute === "soul" || attribute === "necrotic" ? 1 : 0;
-      return total + 5 + card.rank * 2 + stats.health * 1.5 + stats.attack * (disabled ? 0.2 : 0.6) + (disabled ? -1.5 : ability) + (slot < 4 ? 0.2 : 0);
+      const commandedAction = rune.commandedActionAvailable ? 1.5 : 0;
+      return total + 5 + card.rank * 2 + stats.health * 1.5 + stats.attack * (disabled ? 0.2 : 0.6) + (disabled ? -1.5 : ability) + commandedAction + (slot < 4 ? 0.2 : 0);
     }, 0);
   }
   function value(game2, playerIndex) {
@@ -1328,6 +1707,7 @@
       lastRoll: null,
       lastDeflections: [],
       lastNecroticRolls: [],
+      lastPhoenixRolls: [],
       lastSplinterTriggers: []
     });
   }
@@ -1396,6 +1776,7 @@
             lastRoll: next.lastRoll,
             deflections: next.lastDeflections,
             necroticRolls: next.lastNecroticRolls,
+            phoenixRolls: next.lastPhoenixRolls,
             splinterTriggers: next.lastSplinterTriggers
           }
         });
@@ -1837,6 +2218,9 @@
   function describeRune(game2, player, slot, aiOpponent) {
     return `${playerName(player, aiOpponent)}'s ${runeName(game2.players[player].slots[slot])} (${slotName(slot)})`;
   }
+  function isExecutionAttack(source, target) {
+    return getRuneAttribute(source) === "execution" && target.damage > 0 && getRuneAttribute(target) !== "intangible";
+  }
   function actionSummary(game2, action, aiOpponent) {
     const player = game2.currentPlayer;
     const owner = playerName(player, aiOpponent);
@@ -1853,6 +2237,11 @@
     if (action.type === "move") {
       const source2 = describeRune(game2, player, action.from, aiOpponent);
       return slots[action.to] ? `${source2} swapped places with ${describeRune(game2, player, action.to, aiOpponent)}.` : `${source2} moved to ${slotName(action.to)}.`;
+    }
+    if (action.type === "acceptAttack" || action.type === "deflectAttack") {
+      const pending = game2.pendingDeflection;
+      const target = describeRune(game2, pending.player, pending.target, aiOpponent);
+      return `${playerName(pending.player, aiOpponent)} chose to ${action.type === "deflectAttack" ? "deflect" : "take the normal attack"} for ${target}.`;
     }
     const source = describeRune(game2, player, action.slot, aiOpponent);
     if (action.type === "upgrade") {
@@ -1877,6 +2266,18 @@
       for (const slot of targets) counts.set(slot, (counts.get(slot) ?? 0) + 1);
       const targetText = [...counts].map(([slot, count]) => `${describeRune(game2, action.targetPlayer, slot, aiOpponent)}${count > 1 ? ` \xD7${count}` : ""}`).join(", ");
       const trade = attribute === "bolt" || attribute === "masterful" ? `, trading ${action.targetSlots.length} HP` : "";
+      if (attribute === "martyr") {
+        return `${source} used its attribute${ability} and sacrificed itself to refresh ${targetText}'s action.`;
+      }
+      if (attribute === "recall") {
+        return `${source} used its attribute${ability} to return ${targetText} and any attached runes to ${playerName(action.targetPlayer, aiOpponent)}'s hand.`;
+      }
+      if (attribute === "infusion") {
+        return `${source} used its attribute${ability} to give ${targetText} +2 attack until the start of ${owner}'s next turn, paying 1 HP.`;
+      }
+      if (attribute === "command") {
+        return `${source} used its attribute${ability} to give ${targetText} an additional action.`;
+      }
       return `${source} used its attribute${ability}${targetText ? ` on ${targetText}` : ""}${trade}.`;
     }
     throw new Error(`Unsupported action in history: ${action.type}`);
@@ -1888,15 +2289,24 @@
       details.push(`${playerName(before.currentPlayer, aiOpponent)}'s ${roll.card} rolled ${roll.value}: ${roll.success ? "success" : "failure"}.`);
     }
     for (const roll of after.lastDeflections) {
-      details.push(`${playerName(roll.targetPlayer, aiOpponent)}'s ${roll.card} (${slotName(roll.targetSlot)}) rolled ${roll.value}: ${roll.success ? `damage negated, ${roll.returned} returned` : "damage not negated"}.`);
+      const pending2 = before.pendingDeflection;
+      const execution = pending2 && isExecutionAttack(
+        before.players[pending2.attackerPlayer].slots[pending2.slot],
+        before.players[pending2.player].slots[pending2.target]
+      );
+      const outcome = execution ? roll.success ? `Execution prevented, ${roll.returned} returned` : "Execution not prevented" : roll.success ? `damage negated, ${roll.returned} returned` : "damage not negated";
+      details.push(`${playerName(roll.targetPlayer, aiOpponent)}'s ${roll.card} (${slotName(roll.targetSlot)}) rolled ${roll.value}: ${outcome}.`);
     }
     for (const player of after.lastSplinterTriggers) {
       details.push(`${playerName(player, aiOpponent)}'s Splinter triggered.`);
     }
+    for (const heal of after.lastLeechHeals ?? []) {
+      details.push(`${playerName(heal.player, aiOpponent)}'s ${heal.card} (${slotName(heal.slot)}) restored 1 HP with Leech.`);
+    }
     if (action.type === "attribute" && (!after.lastRoll || after.lastRoll.success)) {
       const source = before.players[before.currentPlayer].slots[action.slot];
       const attribute = getRuneAttribute(source);
-      if (attribute !== "mending" && attribute !== "amplifying") {
+      if (attribute !== "mending" && attribute !== "amplifying" && attribute !== "martyr" && attribute !== "recall" && attribute !== "infusion" && attribute !== "command") {
         const targets = /* @__PURE__ */ new Set([
           ...action.targetSlot === void 0 ? [] : [action.targetSlot],
           ...action.targetSlots ?? []
@@ -1909,6 +2319,19 @@
       }
     }
     let healthChanged = false;
+    const pending = before.pendingDeflection;
+    const executionResponse = pending && isExecutionAttack(
+      before.players[pending.attackerPlayer].slots[pending.slot],
+      before.players[pending.player].slots[pending.target]
+    );
+    const executionAttack = action.type === "attack" && !after.pendingDeflection && isExecutionAttack(
+      before.players[before.currentPlayer].slots[action.slot],
+      before.players[1 - before.currentPlayer].slots[action.target]
+    );
+    const failedExecutionDeflection = action.type === "deflectAttack" && executionResponse && !after.lastDeflections.at(-1)?.success;
+    if (executionAttack || action.type === "acceptAttack" && executionResponse || failedExecutionDeflection) {
+      details.push("Execution destroyed the wounded target without retaliation.");
+    }
     for (let player = 0; player < before.players.length; player++) {
       const oldOwner = before.players[player];
       const newOwner = after.players[player];
@@ -1918,6 +2341,13 @@
         const newSlot = newOwner.slots.findIndex((rune) => rune?.stack[0].id === oldRune.stack[0].id);
         const oldLabel = describeRune(before, player, slot, aiOpponent);
         if (newSlot < 0) {
+          const recalled = action.type === "attribute" && player === action.targetPlayer && slot === action.targetSlot && getRuneAttribute(before.players[before.currentPlayer].slots[action.slot]) === "recall";
+          if (recalled) {
+            const attachedCount = oldRune.stack.length - 1;
+            details.push(attachedCount ? `${oldLabel} and its ${attachedCount} attached rune${attachedCount === 1 ? "" : "s"} were returned to ${playerName(player, aiOpponent)}'s hand.` : `${oldLabel} was returned to ${playerName(player, aiOpponent)}'s hand.`);
+            healthChanged = true;
+            continue;
+          }
           const upgraded = action.type === "upgrade" && player === before.currentPlayer && action.slot === slot ? oldOwner.hand.find((card) => card.id === action.cardId) : null;
           const label2 = upgraded ? `${playerName(player, aiOpponent)}'s ${upgraded.name} (${slotName(slot)})` : oldLabel;
           details.push(`${label2} was destroyed.`);
@@ -1937,6 +2367,8 @@
           details.push(`${oldLabel} moved forward to ${slotName(newSlot)}.`);
         }
         if (!oldRune.stunned && newRune.stunned) details.push(`${label} will skip its next turn.`);
+        if (!oldRune.snared && newRune.snared) details.push(`${label} cannot move or swap during its next turn.`);
+        if (oldRune.snared && !newRune.snared) details.push(`${label} is no longer snared.`);
         if (!oldRune.haunted && newRune.haunted) details.push(`${label} is haunted.`);
         if (!isRuneDisabled(before, player, slot) && isRuneDisabled(after, player, newSlot)) {
           details.push(`${label} is disabled.`);
@@ -1944,10 +2376,20 @@
         if ((oldRune.amplification ?? 0) !== (newRune.amplification ?? 0)) {
           details.push(`${label}: Amplifying bonus is now +${newRune.amplification ?? 0} attack.`);
         }
+        if ((oldRune.infusionAttackBonus ?? 0) !== (newRune.infusionAttackBonus ?? 0)) {
+          const infusionBonus = newRune.infusionAttackBonus ?? 0;
+          details.push(infusionBonus ? `${label}: Infusion bonus is now +${infusionBonus} attack.` : `${label}: Infusion bonus expired.`);
+        }
+        if (!oldRune.commandedActionAvailable && newRune.commandedActionAvailable) {
+          details.push(`${label} can now perform an additional action this turn.`);
+        }
       }
     }
     for (const roll of after.lastNecroticRolls) {
       details.push(`${playerName(roll.player, aiOpponent)}'s Necrotic (${slotName(roll.slot)}) rolled ${roll.value} for ${roll.destroyed}: ${roll.success ? "Haunting added to hand" : "no Haunting added"}.`);
+    }
+    for (const roll of after.lastPhoenixRolls) {
+      details.push(`${playerName(roll.player, aiOpponent)}'s ${roll.card} (${slotName(roll.slot)}) rolled ${roll.value}: ${roll.success ? "returned to hand" : "destroyed"}.`);
     }
     if (action.type === "attack" && !healthChanged) details.push("No runes lost health or were destroyed.");
     if (action.type === "endTurn" && after.winner === null) {
@@ -2006,7 +2448,8 @@
       if (targetPlayer !== opponent) return false;
       if (action.target === targetSlot) return true;
       const attacker = game2.players[game2.currentPlayer].slots[action.slot];
-      return getRuneAttribute(attacker) === "powerful" && action.target + 4 === targetSlot;
+      const target = game2.players[targetPlayer].slots[targetSlot];
+      return getRuneAttribute(attacker) === "powerful" && action.target + 4 === targetSlot && (!target || targetSlot < 4 || getRuneAttribute(target) !== "cloak");
     }
     if (action.type === "attribute") {
       return action.targetPlayer === targetPlayer && (action.targetSlot === targetSlot || action.targetSlots?.includes(targetSlot));
@@ -2116,6 +2559,14 @@
         text: `${roll.destroyed}: ${roll.success ? "Haunting added to hand" : "no Haunting added"}`
       });
     }
+    for (const roll of after.lastPhoenixRolls) {
+      cues.push({
+        phase: "after-destruction",
+        title: `${playerName2(roll.player, aiOpponent)} \xB7 ${roll.card} \xB7 ${roll.slot < 4 ? "frontline" : "backline"} ${roll.slot % 4 + 1}`,
+        die: roll.value,
+        text: roll.success ? "Returned to hand" : "Destroyed"
+      });
+    }
     return cues;
   }
 
@@ -2150,6 +2601,7 @@
   var RUNE_EXCITEMENT_FADE_DURATION = 1600;
   var RUNE_EXCITEMENT_FADE_STEP = 350;
   var excitedRunes = /* @__PURE__ */ new Map();
+  var runeParticleDirections = /* @__PURE__ */ new Map();
   var $ = (id) => document.getElementById(id);
   var playerDecks = [prebuiltDecks[0].deck.slice(), prebuiltDecks[0].deck.slice()];
   var game = createGame(playerDecks);
@@ -2175,6 +2627,7 @@
   var inspected = null;
   var handoff = false;
   var handoffAfterDraw = false;
+  var handoffPrompt = null;
   var drawOfferPhase = null;
   var setupMode = "local";
   var gameMode = "local";
@@ -2260,6 +2713,7 @@
     feedbackQueue = [];
     currentFeedback = null;
     victoryPending = false;
+    runeParticleDirections.clear();
   }
   function cancelBoardAnimation() {
     if (!boardAnimation) return;
@@ -2629,22 +3083,37 @@
     const y = Math.sin(angle) * distance;
     const originX = Math.random() * 40 - 20;
     const originY = Math.random() * 40 - 20;
-    particle.style.setProperty("--particle-origin-x", `${originX}px`);
-    particle.style.setProperty("--particle-origin-y", `${originY}px`);
-    particle.style.setProperty("--particle-mid-x", `${x}px`);
-    particle.style.setProperty("--particle-mid-y", `${y}px`);
-    particle.style.setProperty("--particle-end-x", `${x * 1.6}px`);
-    particle.style.setProperty("--particle-end-y", `${y * 1.6}px`);
+    const direction = { originX, originY, x, y };
+    const key = particle.dataset.directionKey;
+    if (key) runeParticleDirections.set(key, direction);
+    applyRuneParticleDirection(particle, direction);
+  }
+  function applyRuneParticleDirection(particle, direction) {
+    particle.style.setProperty("--particle-origin-x", `${direction.originX}px`);
+    particle.style.setProperty("--particle-origin-y", `${direction.originY}px`);
+    particle.style.setProperty("--particle-mid-x", `${direction.x}px`);
+    particle.style.setProperty("--particle-mid-y", `${direction.y}px`);
+    particle.style.setProperty("--particle-end-x", `${direction.x * 1.6}px`);
+    particle.style.setProperty("--particle-end-y", `${direction.y * 1.6}px`);
+  }
+  function restoreRuneParticleDirection(particle, key) {
+    particle.dataset.directionKey = key;
+    const direction = runeParticleDirections.get(key);
+    if (direction) applyRuneParticleDirection(particle, direction);
+    else randomizeRuneParticleDirection(particle);
   }
   function addExcitedParticles(particles, count = 4) {
     const offsets = [0.15, 0.65, 1.7, 2.4];
+    const player = particles.dataset.player;
+    const runeId = particles.dataset.runeId;
     const existing = new Set([...particles.querySelectorAll(".rune-particle-excited")].map((spark) => Number(spark.dataset.particleIndex)));
     for (let index = 0; index < count; index++) {
       if (existing.has(index)) continue;
       const spark = node("span", "rune-particle rune-particle-excited");
       spark.dataset.particleIndex = String(index);
+      const directionKey = `${player}:${runeId}:excited:${index}`;
+      restoreRuneParticleDirection(spark, directionKey);
       spark.style.animationDelay = `-${(performance.now() / 1e3 + offsets[index]) % 1.9}s`;
-      randomizeRuneParticleDirection(spark);
       spark.addEventListener("animationiteration", () => randomizeRuneParticleDirection(spark));
       particles.append(spark);
     }
@@ -2713,16 +3182,6 @@
     scheduleRuneExcitementExpiry(player, runeId, excitement);
     particles.classList.remove("cooling");
     addExcitedParticles(particles);
-  }
-  function exciteActionRune(before, after, action) {
-    const player = before.currentPlayer;
-    const sourceSlot = action.type === "move" ? action.from : action.slot;
-    const sourceRune = action.type === "play" ? after.players[player].slots[action.slot] : before.players[player].slots[sourceSlot];
-    if (!sourceRune) return;
-    const runeId = sourceRune.stack[0].id;
-    const slot = after.players[player].slots.findIndex((rune) => rune?.stack[0].id === runeId);
-    if (slot < 0) return;
-    exciteRuneParticles(player, runeId);
   }
   function emitParticleBurst(particles, options) {
     let lifetime = 0;
@@ -3010,7 +3469,24 @@
   function updateDeckEditor() {
     const total = deckRank(draftDeck);
     $("deck-status").textContent = `${draftDeck.length} ${draftDeck.length === 1 ? "card" : "cards"}, ${total}/${DECK_RANK_LIMIT} ranks.${total === DECK_RANK_LIMIT ? " Remove cards to make room." : ""}`;
-    for (const tile of $("deck-cards").children) {
+    const selectedRanks = new Set([...$("deck-rank-filters").querySelectorAll("input:checked")].map((input) => Number(input.value)));
+    const selectedColors = new Set([...$("deck-color-filters").querySelectorAll("input:checked")].map((input) => input.value));
+    const onlyInDeck = $("deck-in-deck-filter").checked;
+    const sortOrder = $("deck-sort").value;
+    const tiles = [...$("deck-cards").querySelectorAll(".deck-card")];
+    tiles.sort((first, second) => {
+      const firstCard = cards[first.dataset.cardKey];
+      const secondCard = cards[second.dataset.cardKey];
+      if (sortOrder === "rank-asc" && firstCard.rank !== secondCard.rank) {
+        return firstCard.rank - secondCard.rank;
+      }
+      if (sortOrder === "rank-desc" && firstCard.rank !== secondCard.rank) {
+        return secondCard.rank - firstCard.rank;
+      }
+      return firstCard.name.localeCompare(secondCard.name);
+    });
+    let visibleCards = 0;
+    for (const tile of tiles) {
       const card = cards[tile.dataset.cardKey];
       const count = draftDeck.filter((entry) => entry === card).length;
       tile.querySelector(".deck-count").textContent = String(count);
@@ -3020,11 +3496,36 @@
       add.disabled = total + card.rank > DECK_RANK_LIMIT;
       remove.setAttribute("aria-label", `Remove ${card.name} from deck`);
       add.setAttribute("aria-label", `Add ${card.name} to deck`);
+      tile.hidden = selectedRanks.size > 0 && !selectedRanks.has(card.rank) || selectedColors.size > 0 && !card.colors.some((color) => selectedColors.has(color)) || onlyInDeck && count === 0;
+      if (!tile.hidden) visibleCards++;
     }
+    $("deck-cards").append(...tiles, $("deck-empty-results"));
+    $("deck-empty-results").hidden = visibleCards > 0;
     const valid = draftDeck.some((card) => card.rank === 1);
     $("deck-validation").textContent = storageIssue || (valid ? "Deck is ready." : "A deck needs at least one rank 1 rune.");
     $("deck-use").disabled = !valid;
     $("deck-save").disabled = !valid || Boolean(storageIssue);
+    $("deck-delete").disabled = Boolean(storageIssue) || !$("deck-load").value.startsWith("saved:");
+  }
+  function createDeckFilters() {
+    const ranks = [...new Set(Object.values(cards).map((card) => card.rank))].sort((a, b) => a - b);
+    const colors = [...new Set(Object.values(cards).flatMap((card) => card.colors))].sort();
+    for (const rank of ranks) {
+      const label = node("label", "deck-filter-option");
+      const input = node("input");
+      input.type = "checkbox";
+      input.value = String(rank);
+      label.append(input, node("span", null, String(rank)));
+      $("deck-rank-filters").append(label);
+    }
+    for (const color of colors) {
+      const label = node("label", "deck-filter-option");
+      const input = node("input");
+      input.type = "checkbox";
+      input.value = color;
+      label.append(input, node("span", null, color[0].toUpperCase() + color.slice(1)));
+      $("deck-color-filters").append(label);
+    }
   }
   function createDeckCards() {
     const container = $("deck-cards");
@@ -3107,13 +3608,17 @@
   }
   function perform(action, aiAttempt = null, placementSide = null) {
     const previous = game;
+    const pendingDeflection = ["acceptAttack", "deflectAttack"].includes(action.type) ? game.pendingDeflection : null;
+    const combatSource = action.type === "attack" ? game.players[game.currentPlayer].slots[action.slot] : pendingDeflection ? game.players[pendingDeflection.attackerPlayer].slots[pendingDeflection.slot] : null;
+    const combatTarget = action.type === "attack" ? game.players[1 - game.currentPlayer].slots[action.target] : pendingDeflection ? game.players[pendingDeflection.player].slots[pendingDeflection.target] : null;
+    const executionAttack = combatSource && combatTarget && getRuneAttribute(combatSource) === "execution" && combatTarget.damage > 0 && getRuneAttribute(combatTarget) !== "intangible";
     const attribute = action.type === "attribute" ? getRuneAttribute(game.players[game.currentPlayer].slots[action.slot]) : null;
     const sourceName = action.type === "attribute" ? game.players[game.currentPlayer].slots[action.slot].stack.at(-1).name : null;
     const focusRune = action.type === "chooseFocus" ? game.players[game.currentPlayer].slots[action.slot] : null;
     const focusId = focusRune?.stack[0].id;
     const focusChoice = focusRune && action.sourceSlot !== null ? game.players[game.currentPlayer].slots[action.sourceSlot].stack.at(-1).name : null;
     const incomingFocusIds = action.type === "endTurn" ? game.players[1 - game.currentPlayer].slots.filter((rune) => rune?.stack.at(-1).attribute === "focus").map((rune) => rune.stack[0].id) : [];
-    const immuneTarget = action.type === "attribute" && attribute !== "mending" && attribute !== "amplifying" && [...action.targetSlots ?? [], ...action.targetSlot === void 0 ? [] : [action.targetSlot]].some((slot) => getRuneAttribute(game.players[action.targetPlayer].slots[slot]) === "intangible");
+    const immuneTarget = action.type === "attribute" && attribute !== "mending" && attribute !== "amplifying" && attribute !== "infusion" && attribute !== "command" && [...action.targetSlots ?? [], ...action.targetSlot === void 0 ? [] : [action.targetSlot]].some((slot) => getRuneAttribute(game.players[action.targetPlayer].slots[slot]) === "intangible");
     const actualRolls = aiAttempt?.actualRolls ?? [];
     game = aiLog ? applyLoggedAction(game, action, actualRolls) : applyAction(game, action);
     const frontlineDestination = action.type === "play" ? action.slot : action.type === "move" ? action.to : null;
@@ -3131,9 +3636,25 @@
       const roll = game.lastRoll ? `${game.lastRoll.card} rolled ${game.lastRoll.value}. ` : "";
       const immunity = immuneTarget && (!game.lastRoll || game.lastRoll.success) ? "Intangible is immune to the damage. " : "";
       message = `${roll}${immunity}${game.winner === "draw" ? `${drawDescription(game.drawReason)} The round is a draw.` : `${gameMode === "ai" && game.winner === 1 ? "AI" : `Player ${game.winner + 1}`} wins!`}`;
+    } else if (action.type === "attack" && game.pendingDeflection) {
+      handoff = gameMode === "local";
+      handoffAfterDraw = false;
+      const defender = gameMode === "ai" && game.currentPlayer === 1 ? "The AI" : `Player ${game.currentPlayer + 1}`;
+      handoffPrompt = handoff ? `Player ${previous.currentPlayer + 1} attacked. Pass the device to ${defender} to choose a defense.` : null;
+      message = `${defender} must choose whether to take the normal attack or deflect it.`;
+    } else if (action.type === "acceptAttack" || action.type === "deflectAttack") {
+      handoff = gameMode === "local";
+      handoffAfterDraw = false;
+      const defender = gameMode === "ai" && pendingDeflection.player === 1 ? "The AI" : `Player ${pendingDeflection.player + 1}`;
+      handoffPrompt = handoff ? `Player ${previous.currentPlayer + 1} chose to ${action.type === "deflectAttack" ? "deflect" : "take the normal attack"}. Pass the device back to Player ${game.currentPlayer + 1}.` : null;
+      message = action.type === "deflectAttack" ? `${defender} chose to deflect.` : `${defender} chose to take the normal attack.`;
+      if (executionAttack) {
+        message += action.type === "deflectAttack" ? deflected ? " Execution was stopped by the successful deflection." : " The deflection failed to stop Execution; the target was destroyed." : " Execution destroyed the wounded target without retaliation.";
+      }
     } else if (action.type === "endTurn") {
       handoff = gameMode === "local";
       handoffAfterDraw = false;
+      handoffPrompt = null;
       message = isAiTurn() ? "The AI is choosing its next action." : "Select a card or rune to see its available actions.";
     } else if (action.type === "offerDraw") {
       message = "Draw offered; awaiting the opponent's response.";
@@ -3147,8 +3668,21 @@
         message = "Mending restored 1 hit point.";
       } else if (attribute === "amplifying") {
         message = "Amplifying gave the friendly rune +1 attack until the effect ends.";
+      } else if (attribute === "infusion") {
+        const target = previous.players[action.targetPlayer].slots[action.targetSlot];
+        message = `${sourceName} gave ${target.stack.at(-1).name} +2 attack until the start of its owner's next turn, paying 1 HP.`;
+      } else if (attribute === "command") {
+        const target = previous.players[action.targetPlayer].slots[action.targetSlot];
+        message = `Command refreshed ${target.stack.at(-1).name}'s action. It may attack, use an attribute, or upgrade; it cannot move again.`;
       } else if (attribute === "spectral") {
         message = immuneTarget ? "Intangible is immune to Spectral." : "Spectral disabled the target until the effect ends.";
+      } else if (attribute === "snare") {
+        message = "Snare prevents the target from moving or swapping during its next turn.";
+      } else if (attribute === "martyr") {
+        message = `${sourceName} sacrificed itself to refresh the friendly rune's action.`;
+      } else if (attribute === "recall") {
+        const target = previous.players[action.targetPlayer].slots[action.targetSlot];
+        message = `All cards in ${target.stack.at(-1).name}'s stack returned to your hand.`;
       } else if (attribute === "bolt") {
         message = `${sourceName} traded ${action.targetSlots.length} hit point${action.targetSlots.length === 1 ? "" : "s"}. Check each target's remaining health.`;
       } else if (attribute === "masterful") {
@@ -3175,20 +3709,30 @@
         upgrade: "Rune upgraded.",
         attack: "Attack resolved. Check each rune's remaining health."
       };
-      message = descriptions[action.type];
+      message = action.type === "attack" && executionAttack ? "Execution destroyed the wounded target without retaliation." : descriptions[action.type];
     }
     const lostFocus = incomingFocusIds.filter((id) => !game.players[game.currentPlayer].slots.some((rune) => rune?.stack[0].id === id)).length;
     if (lostFocus) {
       message += ` ${lostFocus === 1 ? "A Focus was" : `${lostFocus} Focus runes were`} destroyed at the start of the turn after losing a copied health bonus.`;
     }
     if (game.lastDeflections.length) {
-      message += " " + game.lastDeflections.map((roll) => `${roll.card} (Player ${roll.targetPlayer + 1}, ${describeSlot(roll.targetSlot)}) rolled ${roll.value}: ${roll.success ? `damage negated, ${roll.returned} returned` : "damage not negated"}.`).join(" ");
+      message += " " + game.lastDeflections.map((roll) => {
+        const executionRoll = executionAttack && pendingDeflection && roll.targetPlayer === pendingDeflection.player && roll.targetSlot === pendingDeflection.target;
+        const outcome = executionRoll ? roll.success ? `Execution prevented, ${roll.returned} returned` : "Execution not prevented" : roll.success ? `damage negated, ${roll.returned} returned` : "damage not negated";
+        return `${roll.card} (Player ${roll.targetPlayer + 1}, ${describeSlot(roll.targetSlot)}) rolled ${roll.value}: ${outcome}.`;
+      }).join(" ");
     }
     if (game.lastNecroticRolls.length) {
       message += " " + game.lastNecroticRolls.map((roll) => `Player ${roll.player + 1}'s Necrotic (${describeSlot(roll.slot)}) rolled ${roll.value} for ${roll.destroyed}: ${roll.success ? "Haunting added to hand" : "no Haunting added"}.`).join(" ");
     }
+    if (game.lastPhoenixRolls.length) {
+      message += " " + game.lastPhoenixRolls.map((roll) => `Player ${roll.player + 1}'s ${roll.card} (${describeSlot(roll.slot)}) rolled ${roll.value}: ${roll.success ? "returned to hand" : "destroyed"}.`).join(" ");
+    }
     if (game.lastSplinterTriggers.length) {
       message += " " + game.lastSplinterTriggers.map((player) => `Player ${player + 1}'s Splinter triggered.`).join(" ");
+    }
+    if (game.lastLeechHeals.length) {
+      message += " " + game.lastLeechHeals.map((heal) => `Player ${heal.player + 1}'s ${heal.card} (${describeSlot(heal.slot)}) restored 1 HP with Leech.`).join(" ");
     }
     const result = game;
     const resultMessage = message;
@@ -3210,15 +3754,13 @@
     handoffAfterDraw = resultHandoffAfterDraw;
     message = resultMessage;
     showDamageFeedback(previous, result, action);
-    const boardAnimated = animateBoardAction(previous, result, action, () => {
+    animateBoardAction(previous, result, action, () => {
       render();
-      exciteActionRune(previous, result, action);
       showVictory();
       scheduleAiTurn();
     });
     recordResult();
     render();
-    if (!boardAnimated) exciteActionRune(previous, result, action);
     if (action.type === "endTurn" && game.winner === null && !handoff) highlightTurn();
     flashActionSlots(previous, action);
     if (game.winner !== null) victoryPending = true;
@@ -3364,6 +3906,13 @@
       return { left: rect.left + (rect.width - artWidth) / 2, top: rect.top + (rect.height - artHeight) / 2, width: artWidth, height: artHeight };
     };
     const previews = getTargetLinks(selection, selectedActions(), game.currentPlayer, targetPreview);
+    const pendingAttack = game.pendingDeflection ? [{
+      sourcePlayer: game.pendingDeflection.attackerPlayer,
+      sourceSlot: game.pendingDeflection.slot,
+      targetPlayer: game.pendingDeflection.player,
+      targetSlot: game.pendingDeflection.target,
+      type: "target-attack"
+    }] : [];
     const activeFocusLinks = getFocusCopyLinks(game);
     const focusPreview = focusTargetPreview ? [{
       sourcePlayer: focusTargetPreview.player,
@@ -3372,7 +3921,7 @@
       targetSlot: focusTargetPreview.sourceSlot,
       type: "focus-preview"
     }].filter((preview) => !activeFocusLinks.some((link) => link.sourcePlayer === preview.sourcePlayer && link.sourceSlot === preview.sourceSlot && link.targetPlayer === preview.targetPlayer && link.targetSlot === preview.targetSlot)) : [];
-    for (const link of [...links, ...activeFocusLinks, ...previews, ...focusPreview]) {
+    for (const link of [...links, ...activeFocusLinks, ...previews, ...focusPreview, ...pendingAttack]) {
       const source = artworkBounds(link.sourcePlayer, link.sourceSlot);
       const target = artworkBounds(link.targetPlayer, link.targetSlot);
       const sx = source.left + source.width / 2 - board.left;
@@ -3449,17 +3998,41 @@
       const attribute = selection?.kind === "rune" && selection.mode === "attribute" ? getRuneAttribute(game.players[game.currentPlayer].slots[selection.slot]) : null;
       const targetCount = (attribute === "masterful" || attribute === "bolt") && selectedTarget ? selection.targetSlots.filter((target) => target === slot).length : 0;
       const upgradeAvailable = Boolean(rune?.acted && isMine && playerIndex === game.currentPlayer && ALLOW_SECOND_PLAYER_FIRST_TURN_UPGRADE && game.turn === 2 && getLegalActions(game).some((action) => action.type === "upgrade" && action.slot === slot));
-      const availability = rune && isMine && !disabled && !rune.stunned ? `, movement ${rune.moved ? "used" : "available"}, ${upgradeAvailable ? "upgrade available" : `action ${rune.acted ? "used" : "available"}`}` : "";
+      const frenzyAttacks = rune && getRuneAttribute(rune) === "frenzy" ? rune.attacksUsed ?? 0 : null;
+      const availability = rune && isMine && !disabled && !rune.stunned ? `, movement ${rune.snared ? "blocked by Snare" : rune.moved ? "used" : "available"}, ${upgradeAvailable ? "upgrade available" : `action ${rune.acted ? "used" : "available"}`}` : rune ? `, ${rune.acted ? "acted" : "not acted"} this turn` : "";
+      const frenzyAvailability = frenzyAttacks === null ? "" : `, attacks ${frenzyAttacks}/2 used${rune.commandedActionAvailable && frenzyAttacks >= 2 ? ", Command allows another attack" : ""}`;
       const effects = effectDescriptions(links, playerIndex, slot);
-      button.setAttribute("aria-label", `${isMine ? "Your" : "Opponent"} ${describeSlot(slot)}${rune ? `: ${rune.stack.at(-1).name}` : ": empty"}${rune?.haunted ? ", haunted" : ""}${rune?.amplification ? `, +${rune.amplification} attack` : ""}${disabled ? ", disabled" : ""}${rune?.stunned ? ", skips turn" : ""}${availability}${selectedTarget ? `, selected target${targetCount ? `, ${targetCount} damage` : ""}` : ""}${focusTarget ? ", Focus copy source" : ""}${effects.length ? `, ${effects.join(", ")}` : ""}`);
+      button.setAttribute("aria-label", `${isMine ? "Your" : "Opponent"} ${describeSlot(slot)}${rune ? `: ${rune.stack.at(-1).name}` : ": empty"}${rune?.haunted ? ", haunted" : ""}${rune?.amplification ? `, +${rune.amplification} attack` : ""}${rune?.infusionAttackBonus ? `, +${rune.infusionAttackBonus} attack from Infusion` : ""}${rune?.commandedActionAvailable ? ", Command-granted action available" : ""}${disabled ? ", disabled" : ""}${rune?.stunned ? ", skips turn" : ""}${availability}${frenzyAvailability}${selectedTarget ? `, selected target${targetCount ? `, ${targetCount} damage` : ""}` : ""}${focusTarget ? ", Focus copy source" : ""}${effects.length ? `, ${effects.join(", ")}` : ""}`);
       const draggingAttack = Boolean(draggedRune && selection?.kind === "rune" && selection.mode === "attack" && selection.slot === draggedRune.slot && draggedRune.player === game.currentPlayer);
       const legal = selection?.kind === "hand" && isMine ? options.some((action) => (action.type === "play" || action.type === "upgrade") && action.slot === slot) : selection?.kind === "rune" && (selection.mode === "move" && isMine && options.some((action) => action.type === "move" && action.to === slot) || draggingAttack && isMine && options.some((action) => action.type === "move" && action.from === selection.slot && action.to === slot) || isActionTarget(selection, options, game.currentPlayer, playerIndex, slot));
       const attackPreview = legal && selection?.mode === "attack" && !isMine ? getAttackDamage(game, selection.slot, slot) : null;
       const attributePreview = legal && selection?.mode === "attribute" ? getAttributeDamagePreview(game, selection.slot, playerIndex, slot, selection.targetSlots) : null;
       const damagePreview = attackPreview ?? attributePreview;
+      const lightningOutcomes = [
+        ...attackPreview?.lightningDisableTarget ? [`Lightning disables this rune${attackPreview.deflectable ? " unless Deflecting succeeds" : ""}.`] : [],
+        ...attackPreview?.lightningDisableAttacker ? ["Defending Lightning disables the attacker after combat."] : []
+      ];
       if (damagePreview) {
-        const amount = attributePreview?.variable ? `0-${damagePreview.damage}` : damagePreview.deflectable ? `up to ${damagePreview.damage}` : String(damagePreview.damage);
-        button.setAttribute("aria-label", `${button.getAttribute("aria-label")}, ${amount} damage`);
+        const previewTitles = [];
+        const amount = attributePreview?.variable ? `0-${damagePreview.damage}` : damagePreview.deflectable ? `UP TO ${damagePreview.damage}` : String(damagePreview.damage);
+        const preview = node(
+          "span",
+          "target-count target-damage",
+          attackPreview?.execution ? attackPreview.deflectable ? "EXEC*" : "EXEC" : `${amount} DMG`
+        );
+        if (attackPreview?.execution) {
+          const outcome = attackPreview.deflectable ? "Execution destroys unless deflected" : "Execution destroys without retaliation";
+          button.setAttribute("aria-label", `${button.getAttribute("aria-label")}, ${outcome}`);
+          previewTitles.push(`${outcome}.`);
+        } else {
+          button.setAttribute("aria-label", `${button.getAttribute("aria-label")}, ${amount} damage`);
+        }
+        if (lightningOutcomes.length) {
+          button.setAttribute("aria-label", `${button.getAttribute("aria-label")}, ${lightningOutcomes.join(" ")}`);
+          previewTitles.push(...lightningOutcomes);
+        }
+        if (previewTitles.length) preview.title = previewTitles.join(" ");
+        statusEffects.append(preview);
       }
       const showEmpty = isMine && (selection?.kind === "rune" && (selection.mode === "move" || draggingAttack) && legal || selection?.kind === "hand" && legal);
       if (!rune && !showEmpty) {
@@ -3519,8 +4092,9 @@
         for (let particle = 0; particle < 4; particle++) {
           const spark = node("span", "rune-particle");
           const phase = (particleTime + particleOffsets[particle]) % 2.8;
+          const directionKey = `${playerIndex}:${rune.stack[0].id}:idle:${particle}`;
+          restoreRuneParticleDirection(spark, directionKey);
           spark.style.animationDelay = `-${phase}s`;
-          randomizeRuneParticleDirection(spark);
           spark.addEventListener("animationiteration", () => randomizeRuneParticleDirection(spark));
           particles.append(spark);
         }
@@ -3536,32 +4110,64 @@
         cardImage.addEventListener("load", () => {
           if (cardImage.isConnected) renderEffectLinks();
         });
-        const statusEffects = node("span", "slot-effects");
-        if (targetCount) statusEffects.append(node("span", "target-count", `${targetCount} DMG`));
+        const statusEffects2 = node("span", "slot-effects");
+        if (targetCount) statusEffects2.append(node("span", "target-count", `${targetCount} DMG`));
         if (damagePreview) {
           const amount = attributePreview?.variable ? `0-${damagePreview.damage}` : damagePreview.deflectable ? `UP TO ${damagePreview.damage}` : String(damagePreview.damage);
-          statusEffects.append(node("span", "target-count target-damage", `${amount} DMG`));
+          const preview = node(
+            "span",
+            "target-count target-damage",
+            attackPreview?.execution ? attackPreview.deflectable ? "EXEC*" : "EXEC" : `${amount} DMG`
+          );
+          if (attackPreview?.execution) {
+            preview.title = attackPreview.deflectable ? "Execution destroys this wounded target unless Deflecting succeeds." : "Execution destroys this wounded target without retaliation.";
+          }
+          statusEffects2.append(preview);
         }
-        if (rune.haunted) statusEffects.append(node("span", "haunted", "HAUNTED"));
-        if (rune.amplification) statusEffects.append(node("span", "haunted", `+${rune.amplification} ATK`));
-        if (disabled) statusEffects.append(node("span", "stunned", "DISABLED"));
-        if (rune.stunned) statusEffects.append(node("span", "stunned", "SKIPS TURN"));
+        if (rune.haunted) statusEffects2.append(node("span", "haunted", "HAUNTED"));
+        if (rune.amplification) statusEffects2.append(node("span", "haunted", `+${rune.amplification} ATK`));
+        if (rune.infusionAttackBonus) statusEffects2.append(node("span", "haunted", `+${rune.infusionAttackBonus} INFUSED`));
+        if (rune.commandedActionAvailable) statusEffects2.append(node("span", "haunted", "COMMAND ACTION"));
+        if (disabled) statusEffects2.append(node("span", "stunned", "DISABLED"));
+        if (rune.stunned) statusEffects2.append(node("span", "stunned", "SKIPS TURN"));
+        if (rune.snared) statusEffects2.append(node("span", "stunned", "SNARED"));
         const meta = node("span", "slot-meta");
         meta.append(node("span", "health", `\u2665 ${stats.health}/${stats.maxHealth}`));
+        const status = node("span", "availability");
+        status.setAttribute("aria-hidden", "true");
         if (isMine && !disabled && !rune.stunned) {
-          const status = node("span", "availability");
-          status.setAttribute("aria-hidden", "true");
           status.append(
-            node("span", rune.moved ? "availability-used" : "availability-ready", `MOVE ${rune.moved ? "\u2713" : "\u25CB"}`),
+            node(
+              "span",
+              rune.moved || rune.snared ? "availability-used" : "availability-ready",
+              rune.snared ? "MOVE \u2715" : `MOVE ${rune.moved ? "\u2713" : "\u25CB"}`
+            ),
             node(
               "span",
               rune.acted && !upgradeAvailable ? "availability-used" : "availability-ready",
               upgradeAvailable ? "UPGRADE \u25CB" : `ACTION ${rune.acted ? "\u2713" : "\u25CB"}`
             )
           );
-          meta.append(status);
+        } else {
+          const acted = node(
+            "span",
+            rune.acted ? "availability-used" : "availability-ready",
+            rune.acted ? "ACTED \u2713" : "NOT ACTED \u25CB"
+          );
+          acted.title = rune.acted ? "This rune has acted this turn; Ambush gets no bonus when attacking it." : "This rune has not acted this turn; Ambush gets +1 damage when attacking it, unless it is defending Intangible.";
+          status.append(acted);
         }
-        button.append(statusEffects, image, meta);
+        if (frenzyAttacks !== null) {
+          const attacks = node(
+            "span",
+            frenzyAttacks < 2 || rune.commandedActionAvailable ? "availability-ready" : "availability-used",
+            `ATTACKS ${frenzyAttacks}/2`
+          );
+          attacks.title = `${frenzyAttacks} Frenzy attacks used this turn.${rune.commandedActionAvailable ? " Command grants one additional action." : ""}`;
+          status.append(attacks);
+        }
+        meta.append(status);
+        button.append(statusEffects2, image, meta);
       } else {
         button.append(node("span", "slot-label", describeSlot(slot)));
       }
@@ -3693,21 +4299,29 @@
       const slot = game.players[playerIndex].slots.indexOf(rune);
       const disabled = isRuneDisabled(game, playerIndex, slot);
       details.append(node("p", "detail-stats", `Health ${stats.health}/${stats.maxHealth}  \xB7  Attack ${stats.attack}`));
-      if (getRuneAttribute(rune) === "lightning") details.append(node("p", "detail-stats", "Lightning deals 1 damage when attacking, before defenses."));
+      if (getRuneAttribute(rune) === "lightning") {
+        details.append(node("p", "detail-stats", "Lightning deals normal combat damage and disables the opposing rune through the end of its next turn when attacking or defending."));
+      }
       if (card.attribute === "focus") {
         details.append(node("p", "detail-stats", rune.focusCopy ? `Copied from ${rune.focusCopy.name}: ${rune.focusCopy.attributeText}` : "Focus has no copied attribute."));
       }
       if (rune.haunted) details.append(node("p", "detail-stats", "Haunted: -1 attack until destroyed."));
       if (rune.amplification) details.append(node("p", "detail-stats", `Amplifying: +${rune.amplification} attack.`));
+      if (rune.infusionAttackBonus) details.append(node("p", "detail-stats", `Infusion: +${rune.infusionAttackBonus} attack until the start of its owner's next turn.`));
+      if (rune.commandedActionAvailable) details.append(node("p", "detail-stats", "Command: one additional attack, attribute, or upgrade is available this turn."));
+      if (rune.snared) details.append(node("p", "detail-stats", "Snared: cannot move or swap this turn, but can still act."));
       if (rune.stunned) details.append(node("p", "detail-stats", "This rune cannot move or act during its owner's next turn."));
-      if (rune.lightningDisabled) details.append(node("p", "detail-stats", "Lightning: disabled through the end of its affected turn."));
+      if (rune.lightningDisabledThroughTurn >= game.turn) {
+        details.append(node("p", "detail-stats", "Lightning: disabled through the end of its next turn."));
+      }
       if (disabled) details.append(node("p", "detail-stats", "Disabled; defensive effects still work."));
       for (const effect of effectDescriptions(links, playerIndex, slot)) {
         details.append(node("p", "detail-stats", `${effect}.`));
       }
       if (rune.temporaryHealth) details.append(node("p", "detail-stats", `Temporary health: ${rune.temporaryHealth} (lost first when damaged).`));
       const upgradeAvailable = rune.acted && playerIndex === game.currentPlayer && ALLOW_SECOND_PLAYER_FIRST_TURN_UPGRADE && game.turn === 2 && getLegalActions(game).some((action) => action.type === "upgrade" && action.slot === slot);
-      details.append(node("p", "detail-stats", rune.stunned || disabled ? "Movement and action unavailable." : `Movement: ${rune.moved ? "used" : "available"}  \xB7  ${upgradeAvailable ? "Upgrade available" : `Action: ${rune.acted ? "used" : "available"}`}`));
+      const frenzyAttacks = getRuneAttribute(rune) === "frenzy" ? rune.attacksUsed ?? 0 : null;
+      details.append(node("p", "detail-stats", rune.stunned || disabled ? "Movement and action unavailable." : `Movement: ${rune.snared ? "blocked by Snare" : rune.moved ? "used" : "available"}  \xB7  ${upgradeAvailable ? "Upgrade available" : `Action: ${rune.acted ? "used" : "available"}`}${frenzyAttacks === null ? "" : `  \xB7  Attacks: ${frenzyAttacks}/2 used`}`));
     }
   }
   function showRuneInfo(card, rune) {
@@ -3811,16 +4425,25 @@
     renderLearningStatus();
     $("handoff").hidden = !handoff;
     const choosingFocus = renderFocusChoice();
-    $("offer-draw").disabled = !hasStarted || game.winner !== null || isAiTurn() || handoff || choosingFocus || drawOfferPhase !== null || game.pendingDrawOffer !== null;
+    $("offer-draw").disabled = !hasStarted || game.winner !== null || isAiTurn() || handoff || choosingFocus || drawOfferPhase !== null || game.pendingDrawOffer !== null || game.pendingDeflection !== null;
     $("draw-offer").hidden = drawOfferPhase === null;
     $("game").inert = handoff || choosingFocus || drawOfferPhase !== null;
     $("battlefield").inert = isAiTurn();
     $("controls").inert = isAiTurn();
     $("inspect-panel").inert = isAiTurn();
     if (handoff) {
-      $("handoff-previous").textContent = handoffAfterDraw ? "The previous round ended in a draw." : `Player ${2 - current} ended their turn.`;
+      $("handoff-previous").textContent = handoffAfterDraw ? "The previous round ended in a draw." : handoffPrompt ?? `Player ${2 - current} ended their turn.`;
       $("handoff-title").textContent = `Player ${current + 1}'s turn`;
       $("ready").focus();
+    }
+    const deflectionDialog = $("deflection-choice-dialog");
+    if (game.pendingDeflection && !handoff && !isAiTurn()) {
+      const defender = game.players[game.pendingDeflection.player].slots[game.pendingDeflection.target];
+      const defenderName = gameMode === "ai" && game.pendingDeflection.player === 1 ? "The AI" : `Player ${game.pendingDeflection.player + 1}`;
+      $("deflection-choice-message").textContent = `${defenderName}'s ${defender.stack.at(-1).name} can take the normal attack or roll to deflect it.`;
+      if (!deflectionDialog.open && !document.querySelector("dialog[open]")) deflectionDialog.showModal();
+    } else if (deflectionDialog.open) {
+      deflectionDialog.close();
     }
     if (drawOfferPhase !== null) {
       const offeringPlayer = game.currentPlayer + 1;
@@ -3932,8 +4555,16 @@
       message = "Choose a glowing damaged friendly rune to restore 1 hit point.";
     } else if (attribute === "amplifying") {
       message = "Choose another glowing friendly rune to give it +1 attack.";
+    } else if (attribute === "command") {
+      message = "Choose another friendly rune that has already used its action. It may attack, use an attribute, or upgrade; movement remains separate.";
+    } else if (attribute === "martyr") {
+      message = "Choose another friendly rune that has already used its action this turn. Martyr will be destroyed.";
+    } else if (attribute === "recall") {
+      message = "Choose another friendly rune in either row to return to your hand with all attached runes.";
     } else if (attribute === "spectral") {
       message = "Choose a glowing enemy rune to disable. Intangible is immune.";
+    } else if (attribute === "snare") {
+      message = "Choose a glowing enemy rune to prevent it from moving or swapping during its next turn.";
     } else if (attribute === "fire") {
       message = `Choose a glowing enemy rune. ${rune.stack.at(-1).name} will be destroyed.`;
     } else if (attribute === "acid") {
@@ -3954,6 +4585,18 @@
   $("move").addEventListener("click", selectMove);
   $("attack").addEventListener("click", selectAttack);
   $("attribute").addEventListener("click", selectAttribute);
+  $("accept-attack").addEventListener("click", () => {
+    const action = getLegalActions(game).find((candidate) => candidate.type === "acceptAttack");
+    if (!action) throw new Error("No normal-attack response is pending.");
+    $("deflection-choice-dialog").close();
+    perform(action);
+  });
+  $("choose-deflection").addEventListener("click", () => {
+    const action = getLegalActions(game).find((candidate) => candidate.type === "deflectAttack");
+    if (!action) throw new Error("No deflection response is pending.");
+    $("deflection-choice-dialog").close();
+    perform(action);
+  });
   $("wheel-move").addEventListener("click", selectMove);
   $("wheel-attack").addEventListener("click", selectAttack);
   $("wheel-attribute").addEventListener("click", selectAttribute);
@@ -4088,6 +4731,7 @@
   });
   $("ready").addEventListener("click", () => {
     handoff = false;
+    handoffPrompt = null;
     render();
     if (game.winner === null) highlightTurn();
   });
@@ -4112,7 +4756,9 @@
       $("rune-info-dialog").close();
     }
   });
+  createDeckFilters();
   createDeckCards();
+  $("deck-browse-controls").addEventListener("change", updateDeckEditor);
   function showMenu() {
     cancelAiTurn();
     pauseFeedback();
@@ -4468,7 +5114,10 @@
   }
   $("deck-load").addEventListener("change", (event) => {
     const choice = event.target.value;
-    if (choice === "custom") return;
+    if (choice === "custom") {
+      updateDeckEditor();
+      return;
+    }
     draftDeck = getChosenDeck(choice);
     $("deck-name").value = choice.startsWith("saved:") ? choice.slice(6) : "";
     updateDeckEditor();
@@ -4549,6 +5198,27 @@
       $("deck-validation").textContent = `Saved "${name}" in this browser.`;
     } catch (error) {
       $("deck-validation").textContent = `Could not save deck: ${error.message}`;
+    }
+  });
+  $("deck-delete").addEventListener("click", () => {
+    const choice = $("deck-load").value;
+    const name = choice.startsWith("saved:") ? choice.slice(6) : "";
+    if (!name || !window.confirm(`Delete saved deck "${name}"? This cannot be undone.`)) return;
+    try {
+      savedDecks = deleteSavedDeck(window.localStorage, name);
+      for (let player = 0; player < setupDecks.length; player++) {
+        if (setupDecks[player]?.choice === choice) {
+          customDecks[player] = { choice: "custom", label: name, deck: setupDecks[player].deck.slice() };
+          setupDecks[player] = customDecks[player];
+        }
+      }
+      $("deck-load").value = "custom";
+      $("deck-name").value = "";
+      fillDeckChoices($("deck-load"), "custom");
+      updateDeckEditor();
+      $("deck-validation").textContent = `Deleted "${name}". The current deck remains in the builder.`;
+    } catch (error) {
+      $("deck-validation").textContent = `Could not delete deck: ${error.message}`;
     }
   });
   $("deck-use").addEventListener("click", () => {
