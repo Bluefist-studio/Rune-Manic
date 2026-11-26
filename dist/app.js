@@ -115,11 +115,19 @@
     },
     execution: {
       name: "Execution",
-      rank: 3,
+      rank: 4,
       colors: ["black"],
       attribute: "execution",
       attributeText: "When attacking a rune that has lost 1 or more HP, destroy it without taking damage.",
       image: "Cards online/RM_Card_R3 Execution.png"
+    },
+    transpose: {
+      name: "Transpose",
+      rank: 3,
+      colors: ["black"],
+      attribute: "transpose",
+      attributeText: "Swap the positions of two opposing runes. The Black player chooses the runes. Both must end up in legal positions.",
+      image: "Cards online/RM_Card_B3 transpose.png"
     },
     infusion: {
       name: "Infusion",
@@ -374,12 +382,12 @@
   // src/engine.js
   var FRONTLINE_SIZE = 4;
   var SLOT_COUNT = FRONTLINE_SIZE * 2;
-  var MAX_RUNES = 4;
+  var RUNE_LIMITS = /* @__PURE__ */ new Set([4, 6, 8]);
   var DECK_RANK_LIMIT = 24;
   var ALLOW_SECOND_PLAYER_FIRST_TURN_UPGRADE = true;
   var NO_PROGRESS_TURN_LIMIT = 4;
   var CARD_FIELDS = ["name", "rank", "colors", "attribute", "attributeText", "image"];
-  var SUPPORTED_ATTRIBUTES = ["hardened", "any-next-rank", "fortitude", "brawling", "piercing", "piercing-major", "mending", "uprising", "haunting", "powerful", "fire", "magma", "intangible", "acid", "fire-ball", "deflecting", "deflecting-major", "lightning", "soul", "necrotic", "spectral", "bolt", "amplifying", "splinter", "masterful", "focus", "growth", "phoenix", "phantom", "cloak", "soulbind", "guardian", "ambush", "berserk", "frenzy", "snare", "leech", "martyr", "recall", "execution", "infusion", "command"];
+  var SUPPORTED_ATTRIBUTES = ["hardened", "any-next-rank", "fortitude", "brawling", "piercing", "piercing-major", "mending", "uprising", "haunting", "powerful", "fire", "magma", "intangible", "acid", "fire-ball", "deflecting", "deflecting-major", "lightning", "soul", "necrotic", "spectral", "bolt", "amplifying", "splinter", "masterful", "focus", "growth", "phoenix", "phantom", "cloak", "soulbind", "guardian", "ambush", "berserk", "frenzy", "snare", "leech", "martyr", "recall", "execution", "infusion", "command", "transpose"];
   var DAMAGE_ATTRIBUTES = /* @__PURE__ */ new Set(["acid", "bolt", "fire", "fire-ball", "masterful", "magma", "soul"]);
   function validateDeck(deck) {
     if (!Array.isArray(deck) || deck.length === 0) {
@@ -402,15 +410,19 @@
       throw new Error("A deck must contain a rank 1 rune.");
     }
   }
-  function createGame(decks, startingPlayer2 = 0) {
+  function createGame(decks, startingPlayer2 = 0, runeLimit = 4) {
     if (!Array.isArray(decks) || decks.length !== 2) {
       throw new Error("Exactly two decks are required.");
     }
     if (startingPlayer2 !== 0 && startingPlayer2 !== 1) {
       throw new Error("Starting player must be 0 or 1.");
     }
+    if (!RUNE_LIMITS.has(runeLimit)) {
+      throw new Error("Rune limit must be 4, 6, or 8.");
+    }
     decks.forEach(validateDeck);
     return {
+      runeLimit,
       players: decks.map((deck, playerIndex) => ({
         hand: deck.map((card, index) => ({
           ...card,
@@ -798,6 +810,17 @@
     if (count === 0) return [[]];
     return slots.flatMap((slot, index) => targetAllocations(slots.slice(index), count - 1).map((remaining) => [slot, ...remaining]));
   }
+  function transposeSlots(slots, targetSlots) {
+    const [first, second] = targetSlots;
+    if (first === second || !slots[first] || !slots[second]) return null;
+    const result = [...slots];
+    [result[first], result[second]] = [result[second], result[first]];
+    for (let column = 0; column < FRONTLINE_SIZE; column++) {
+      const backline = result[column + FRONTLINE_SIZE];
+      if (backline && !result[column] && getRuneAttribute(backline) !== "phantom") return null;
+    }
+    return result;
+  }
   function getLegalActions(game2) {
     if (game2.winner !== null) return [];
     if (game2.pendingDeflection) {
@@ -825,7 +848,7 @@
       }
     }
     if (actions.length) return actions;
-    if (countRunes(player.slots) < MAX_RUNES) {
+    if (countRunes(player.slots) < game2.runeLimit) {
       for (const card of player.hand) {
         if (card.rank !== 1) continue;
         for (let slot = 0; slot < SLOT_COUNT; slot++) {
@@ -927,6 +950,13 @@
           const maxCost = Math.min(4, getRuneStats(rune, player).health);
           for (let amount = 1; amount <= maxCost && effectiveTargets.length; amount++) {
             for (const targetSlots of targetAllocations(effectiveTargets, amount)) {
+              actions.push({ type: "attribute", slot, targetPlayer: 1 - game2.currentPlayer, targetSlots });
+            }
+          }
+        }
+        if (attribute === "transpose") {
+          for (const targetSlots of targetCombinations(effectiveTargets, 2)) {
+            if (transposeSlots(opponent.slots, targetSlots)) {
               actions.push({ type: "attribute", slot, targetPlayer: 1 - game2.currentPlayer, targetSlots });
             }
           }
@@ -1170,6 +1200,14 @@
           }
           if (getRuneStats(source, player).health <= 0) destroy(next.currentPlayer, action.slot);
           updateWinner(next);
+          break;
+        }
+        if (attribute === "transpose") {
+          const targetPlayer = next.players[action.targetPlayer];
+          targetPlayer.slots = transposeSlots(targetPlayer.slots, action.targetSlots);
+          for (const backRune of targetPlayer.slots.slice(FRONTLINE_SIZE)) {
+            if (backRune) delete backRune.spectralEffect;
+          }
           break;
         }
         if (attribute === "acid" || attribute === "fire-ball") {
@@ -1700,7 +1738,8 @@
     [["martyr"], "Martyr uses its action from either row to destroy itself and refresh the action of another friendly rune that has already used an action this turn. Upgrading counts as using an action, but playing a rune does not. The refreshed action may be an attack, attribute, or upgrade; movement remains separate. Each Martyr can refresh an ally once, and multiple Martyrs may refresh the same ally again after it uses the refreshed action. The ally's normal restrictions still apply, including Frenzy's limit of two attacks per turn. Focus copying Martyr sacrifices Focus itself."],
     [["command"], "Command uses its action from either row to refresh another friendly rune's action after it has already used an action this turn. Upgrading counts as using an action, but playing a rune does not. The target may take one additional attack, attribute, or upgrade; movement remains separate. Command does not sacrifice itself. Each Command can refresh an ally once, and another Command may refresh that ally after it uses the granted action. Command can let Frenzy exceed its usual two-attack limit by one attack for each Command-granted action. Focus copying Command follows the same rules."],
     [["recall"], "Recall uses an action from either row to return another friendly rune from either row to its owner's hand. It returns every card in the rune's upgrade stack; Recall cannot target itself. If a frontline rune is returned, a friendly rune behind it immediately moves forward. Recalling a rune is not destruction, so it does not trigger destruction effects. Focus copying Recall follows the same rules."],
-    [["execution"], "Execution uses its normal attack action. If the target's current HP is below its current maximum HP and it is not defending Intangible, destroy it immediately without normal combat damage or retaliation. Losing temporary HP alone does not qualify because it also lowers current maximum HP. Deflecting rolls as usual: a successful roll prevents Execution, while a failed roll leaves the target to be destroyed. Normal destruction effects still resolve. Focus copying Execution follows the same rules."],
+    [["transpose"], "Transpose uses its action from the frontline only. Its controller chooses two eligible opposing runes and swaps their positions. The swap is allowed only if both resulting positions are legal; a backline rune needs its corresponding frontline occupied unless it is Phantom. Intangible and a backline Cloak cannot be selected. Transpose ignores Snare and does not consume either target's normal movement. Focus copying Transpose follows the same rules."],
+    [["execution"], "Execution uses its normal attack action, which can only be made from the frontline. If the target's current HP is below its current maximum HP and it is not defending Intangible, destroy it immediately without normal combat damage or retaliation. Losing temporary HP alone does not qualify because it also lowers current maximum HP. Deflecting rolls as usual: a successful roll prevents Execution, while a failed roll leaves the target to be destroyed. Normal destruction effects still resolve. Focus copying Execution follows the same rules."],
     [["infusion", "intangible"], "Infusion uses its action from either row to give another friendly rune +2 attack until the start of its owner's next turn. It costs Infusion 1 HP, temporary HP first; it may spend its last HP and still resolve. Infusion bonuses stack and remain if Infusion leaves play or the target upgrades. The bonus applies while defending and even against defending Intangible. Focus copying Infusion follows the same rules."],
     [["guardian"], "Each enabled Guardian reduces each instance of damage dealt to a friendly backline rune by 1. Guardians stack with each other and Hardened, and reduction cannot lower damage below zero. This applies to combat, attributes, secondary hits, and returned deflection damage, but not HP costs paid by the rune's owner. Piercing and Piercing Major ignore Guardian's damage reduction."],
     [["ambush"], "Ambush adds 1 to its attack damage against a rune marked as not acted. A rune that acted during its owner's turn remains marked as acted during the opponent's following turn; the state resets when its owner starts their next turn. Moving alone does not count as acting. This bonus is only for the attacker's damage, and defending Intangible ignores it."],
@@ -1712,8 +1751,8 @@
     [["cloak"], "While Cloak is in the backline, enemy attributes cannot target it. This also prevents attribute damage that would otherwise reach it as a secondary target; attacks are unaffected."]
   ];
   var generalRuneRules = [
-    "Each player can have up to four runes in play, including four in the frontline. Each backline rune needs a frontline rune directly in front of it.",
-    `Rank 1 runes may be played at any time during a turn, up to the battlefield limit. A player must have at least one rune in play on their first turn. On the opening turn, the first player may play up to four rank 1 runes. Newly played runes cannot act${ALLOW_SECOND_PLAYER_FIRST_TURN_UPGRADE ? ", except that the player going second may upgrade them on their first turn" : ""}.`,
+    "Each player can have up to the selected game-format limit in play, with a maximum of four in the frontline. Each backline rune needs a frontline rune directly in front of it.",
+    `Rank 1 runes may be played at any time during a turn, up to the battlefield limit. A player must have at least one rune in play on their first turn. On the opening turn, the first player may play up to the selected game-format limit in rank 1 runes. Newly played runes cannot act${ALLOW_SECOND_PLAYER_FIRST_TURN_UPGRADE ? ", except that the player going second may upgrade them on their first turn" : ""}.`,
     "A player loses when they have no runes on the battlefield, even if they have cards in hand. If both players' last runes are destroyed together, the round is a draw and another round is played with the same decks; the other player goes first.",
     "A Spectral stalemate draws the round when it disables the opponent's only rune, each player has only one rune and no rank 1 cards in hand, Spectral cannot upgrade, and attacking would destroy Spectral without destroying its target.",
     "Damage remains when a rune upgrades. A multicolour rune matches any of its visible colours when upgrading.",
@@ -1755,6 +1794,10 @@
       const commandedAction = rune.commandedActionAvailable ? 1.5 : 0;
       return total + 5 + card.rank * 2 + stats.health * 1.5 + stats.attack * (disabled ? 0.2 : 0.6) + (disabled ? -1.5 : ability) + (soulbindProtection ? 1.5 : 0) + commandedAction + (slot < 4 ? 0.2 : 0);
     }, 0);
+  }
+  function frontlineAttackValue(game2, playerIndex) {
+    const player = game2.players[playerIndex];
+    return player.slots.slice(0, 4).reduce((total, rune) => total + (rune ? getRuneStats(rune, player).attack : 0), 0);
   }
   function value(game2, playerIndex) {
     if (game2.winner === "draw") return 0;
@@ -1839,12 +1882,14 @@
         if (equivalentMove && !isEquivalentMove(game2, next, action)) equivalentMove = false;
         const enemyAfter = action.type === "attack" || action.type === "attribute" ? boardValue(next, 1 - playerIndex) : null;
         const aggression = enemyAfter !== null && enemyAfter < enemyValue ? 0.3 : 0;
+        const transposePositionGain = action.type === "attribute" && getRuneAttribute(game2.players[playerIndex].slots[action.slot]) === "transpose" ? (frontlineAttackValue(game2, action.targetPlayer) - frontlineAttackValue(next, action.targetPlayer)) * 0.2 : 0;
         const stateValue = value(next, playerIndex);
         samples.push({
           roll,
           stateValue,
           enemyBoardValue: enemyAfter,
           aggression,
+          transposePositionGain,
           winner: next.winner,
           ...inspectSample ? { rollCount, features: inspectSample(game2, action, next) } : {},
           outcomes: {
@@ -1855,7 +1900,7 @@
             splinterTriggers: next.lastSplinterTriggers
           }
         });
-        return sum + stateValue + aggression;
+        return sum + stateValue + aggression + transposePositionGain;
       }, 0) / 2;
       const exclusionReason = equivalentMove ? "Equivalent to staying put." : null;
       candidates.push({ action, score, samples, exclusionReason });
@@ -2356,6 +2401,9 @@
       if (attribute === "command") {
         return `${source} used its attribute${ability} to give ${targetText} an additional action.`;
       }
+      if (attribute === "transpose") {
+        return `${source} used Transpose${ability} to swap the positions of ${targetText}.`;
+      }
       return `${source} used its attribute${ability}${targetText ? ` on ${targetText}` : ""}${trade}.`;
     }
     throw new Error(`Unsupported action in history: ${action.type}`);
@@ -2701,7 +2749,6 @@
   var draggedCardId = null;
   var draggedRune = null;
   var dragHoverTarget = null;
-  var activeDragImage = null;
   var handOrder = "rank";
   var visualColumnOrder = [[0, 1, 2, 3], [0, 1, 2, 3]];
   var targetPreview = null;
@@ -2729,31 +2776,11 @@
   var message = "Select a rank 1 rune from your hand to begin.";
   function setDragImage(event, source) {
     const bounds = source.getBoundingClientRect();
-    const image = source.cloneNode(true);
-    image.classList.add("drag-image-clone");
-    image.removeAttribute("id");
-    image.setAttribute("aria-hidden", "true");
-    image.draggable = false;
-    Object.assign(image.style, {
-      position: "fixed",
-      left: "-10000px",
-      top: "0",
-      width: `${bounds.width}px`,
-      height: `${bounds.height}px`,
-      margin: "0",
-      pointerEvents: "none"
-    });
-    document.body.appendChild(image);
-    activeDragImage = image;
     event.dataTransfer.setDragImage(
-      image,
+      source,
       Math.round(event.clientX - bounds.left),
       Math.round(event.clientY - bounds.top)
     );
-  }
-  function clearDragImage() {
-    activeDragImage?.remove();
-    activeDragImage = null;
   }
   function viewPlayer() {
     return gameMode === "ai" ? 0 : game.currentPlayer;
@@ -3549,13 +3576,15 @@
     $("setup-previous-ai-log").hidden = !aiLog;
   }
   function updateDeckEditor() {
+    const cardList = $("deck-cards");
+    const scrollTop = cardList.scrollTop;
     const total = deckRank(draftDeck);
     $("deck-status").textContent = `${draftDeck.length} ${draftDeck.length === 1 ? "card" : "cards"}, ${total}/${DECK_RANK_LIMIT} ranks.${total === DECK_RANK_LIMIT ? " Remove cards to make room." : ""}`;
     const selectedRanks = new Set([...$("deck-rank-filters").querySelectorAll("input:checked")].map((input) => Number(input.value)));
     const selectedColors = new Set([...$("deck-color-filters").querySelectorAll("input:checked")].map((input) => input.value));
     const onlyInDeck = $("deck-in-deck-filter").checked;
     const sortOrder = $("deck-sort").value;
-    const tiles = [...$("deck-cards").querySelectorAll(".deck-card")];
+    const tiles = [...cardList.querySelectorAll(".deck-card")];
     tiles.sort((first, second) => {
       const firstCard = cards[first.dataset.cardKey];
       const secondCard = cards[second.dataset.cardKey];
@@ -3581,7 +3610,8 @@
       tile.hidden = selectedRanks.size > 0 && !selectedRanks.has(card.rank) || selectedColors.size > 0 && !card.colors.some((color) => selectedColors.has(color)) || onlyInDeck && count === 0;
       if (!tile.hidden) visibleCards++;
     }
-    $("deck-cards").append(...tiles, $("deck-empty-results"));
+    cardList.append(...tiles, $("deck-empty-results"));
+    cardList.scrollTop = scrollTop;
     $("deck-empty-results").hidden = visibleCards > 0;
     const valid = draftDeck.some((card) => card.rank === 1);
     $("deck-validation").textContent = storageIssue || (valid ? "Deck is ready." : "A deck needs at least one rank 1 rune.");
@@ -3748,6 +3778,11 @@
     } else if (action.type === "attribute") {
       if (attribute === "mending") {
         message = "Mending restored 1 hit point.";
+      } else if (attribute === "transpose") {
+        const [firstSlot, secondSlot] = action.targetSlots;
+        const first = previous.players[action.targetPlayer].slots[firstSlot];
+        const second = previous.players[action.targetPlayer].slots[secondSlot];
+        message = `${sourceName} swapped ${first.stack.at(-1).name} (${describeSlot(firstSlot)}) and ${second.stack.at(-1).name} (${describeSlot(secondSlot)}) using Transpose.`;
       } else if (attribute === "amplifying") {
         message = "Amplifying gave the friendly rune +1 attack until the effect ends.";
       } else if (attribute === "soulbind") {
@@ -3908,6 +3943,27 @@
             message = `Choose ${count} different enemy rune${count === 1 ? "" : "s"} for Acid (${selection.targetSlots.length}/${count}). Select again to undo.`;
             render();
           }
+          return;
+        }
+        const transposeOptions = attribute === "transpose" ? options.filter((item) => item.type === "attribute" && item.targetSlots && item.targetPlayer === playerIndex) : [];
+        if (transposeOptions.some((item) => item.targetSlots.includes(slot)) && !isMine && rune) {
+          const selected = selection.targetSlots;
+          if (selected.includes(slot)) {
+            selection.targetSlots = [];
+            message = "Choose two opposing runes to swap. Both positions must be legal.";
+          } else if (selected.length === 0) {
+            selection.targetSlots = [slot];
+            message = "Choose a second opposing rune to swap (1/2). Select the first again to undo.";
+          } else {
+            action = transposeOptions.find((item) => item.targetSlots.includes(selected[0]) && item.targetSlots.includes(slot));
+            if (action) {
+              perform(action);
+              return;
+            }
+            selection.targetSlots = [slot];
+            message = "Those runes cannot swap legally. Choose another second rune, or select this rune again to undo.";
+          }
+          render();
           return;
         }
         action = options.find((item) => item.type === "attribute" && item.targetPlayer === playerIndex && item.targetSlot === slot);
@@ -4082,6 +4138,7 @@
       const selectedTarget = !isMine && selection?.mode === "attribute" && selection.targetSlots?.includes(slot);
       const attribute = selection?.kind === "rune" && selection.mode === "attribute" ? getRuneAttribute(game.players[game.currentPlayer].slots[selection.slot]) : null;
       const targetCount = (attribute === "masterful" || attribute === "bolt") && selectedTarget ? selection.targetSlots.filter((target) => target === slot).length : 0;
+      const transposeTarget = attribute === "transpose" && selectedTarget;
       const upgradeAvailable = Boolean(rune?.acted && isMine && playerIndex === game.currentPlayer && ALLOW_SECOND_PLAYER_FIRST_TURN_UPGRADE && game.turn === 2 && getLegalActions(game).some((action) => action.type === "upgrade" && action.slot === slot));
       const frenzyAttacks = rune && getRuneAttribute(rune) === "frenzy" ? rune.attacksUsed ?? 0 : null;
       const availability = rune && isMine && !disabled && !rune.stunned ? `, movement ${rune.snared ? "blocked by Snare" : rune.moved ? "used" : "available"}, ${upgradeAvailable ? "upgrade available" : `action ${rune.acted ? "used" : "available"}`}` : rune ? `, ${rune.acted ? "acted" : "not acted"} this turn` : "";
@@ -4099,26 +4156,16 @@
         ...damagePreview?.soulbindDamageRedirected ? ["Soulbind takes any HP loss this rune would otherwise take."] : []
       ];
       if (damagePreview) {
-        const previewTitles = [];
         const amount = attributePreview?.variable ? `0-${damagePreview.damage}` : damagePreview.deflectable ? `UP TO ${damagePreview.damage}` : String(damagePreview.damage);
-        const preview = node(
-          "span",
-          "target-count target-damage",
-          attackPreview?.execution ? attackPreview.deflectable ? "EXEC*" : "EXEC" : `${amount} DMG`
-        );
         if (attackPreview?.execution) {
           const outcome = attackPreview.deflectable ? "Execution destroys unless deflected" : "Execution destroys without retaliation";
           button.setAttribute("aria-label", `${button.getAttribute("aria-label")}, ${outcome}`);
-          previewTitles.push(`${outcome}.`);
         } else {
           button.setAttribute("aria-label", `${button.getAttribute("aria-label")}, ${amount} damage`);
         }
         if (previewOutcomes.length) {
           button.setAttribute("aria-label", `${button.getAttribute("aria-label")}, ${previewOutcomes.join(" ")}`);
-          previewTitles.push(...previewOutcomes);
         }
-        if (previewTitles.length) preview.title = previewTitles.join(" ");
-        statusEffects.append(preview);
       }
       const showEmpty = isMine && (selection?.kind === "rune" && (selection.mode === "move" || draggingAttack) && legal || selection?.kind === "hand" && legal);
       if (!rune && !showEmpty) {
@@ -4140,7 +4187,6 @@
           button.draggable = true;
           button.addEventListener("dragstart", (event) => {
             setDragHoverTarget(null);
-            clearDragImage();
             setDragImage(event, button);
             draggedRune = { player: playerIndex, slot };
             event.dataTransfer.effectAllowed = "move";
@@ -4154,7 +4200,6 @@
             render(false, button);
           });
           button.addEventListener("dragend", () => {
-            clearDragImage();
             if (draggedRune?.player !== playerIndex || draggedRune.slot !== slot) return;
             draggedRune = null;
             setDragHoverTarget(null);
@@ -4196,8 +4241,9 @@
         cardImage.addEventListener("load", () => {
           if (cardImage.isConnected) renderEffectLinks();
         });
-        const statusEffects2 = node("span", "slot-effects");
-        if (targetCount) statusEffects2.append(node("span", "target-count", `${targetCount} DMG`));
+        const statusEffects = node("span", "slot-effects");
+        if (targetCount) statusEffects.append(node("span", "target-count", `${targetCount} DMG`));
+        else if (transposeTarget) statusEffects.append(node("span", "target-count", "SWAP 1/2"));
         if (damagePreview) {
           const amount = attributePreview?.variable ? `0-${damagePreview.damage}` : damagePreview.deflectable ? `UP TO ${damagePreview.damage}` : String(damagePreview.damage);
           const preview = node(
@@ -4208,15 +4254,15 @@
           if (attackPreview?.execution) {
             preview.title = attackPreview.deflectable ? "Execution destroys this wounded target unless Deflecting succeeds." : "Execution destroys this wounded target without retaliation.";
           }
-          statusEffects2.append(preview);
+          statusEffects.append(preview);
         }
-        if (rune.haunted) statusEffects2.append(node("span", "haunted", "HAUNTED"));
-        if (rune.amplification) statusEffects2.append(node("span", "haunted", `+${rune.amplification} ATK`));
-        if (rune.infusionAttackBonus) statusEffects2.append(node("span", "haunted", `+${rune.infusionAttackBonus} INFUSED`));
-        if (rune.commandedActionAvailable) statusEffects2.append(node("span", "haunted", "COMMAND ACTION"));
-        if (disabled) statusEffects2.append(node("span", "stunned", "DISABLED"));
-        if (rune.stunned) statusEffects2.append(node("span", "stunned", "SKIPS TURN"));
-        if (rune.snared) statusEffects2.append(node("span", "stunned", "SNARED"));
+        if (rune.haunted) statusEffects.append(node("span", "haunted", "HAUNTED"));
+        if (rune.amplification) statusEffects.append(node("span", "haunted", `+${rune.amplification} ATK`));
+        if (rune.infusionAttackBonus) statusEffects.append(node("span", "haunted", `+${rune.infusionAttackBonus} INFUSED`));
+        if (rune.commandedActionAvailable) statusEffects.append(node("span", "haunted", "COMMAND ACTION"));
+        if (disabled) statusEffects.append(node("span", "stunned", "DISABLED"));
+        if (rune.stunned) statusEffects.append(node("span", "stunned", "SKIPS TURN"));
+        if (rune.snared) statusEffects.append(node("span", "stunned", "SNARED"));
         const meta = node("span", "slot-meta");
         meta.append(node("span", "health", `\u2665 ${stats.health}/${stats.maxHealth}`));
         const status = node("span", "availability");
@@ -4253,7 +4299,7 @@
           status.append(attacks);
         }
         meta.append(status);
-        button.append(statusEffects2, image, meta);
+        button.append(statusEffects, image, meta);
       } else {
         button.append(node("span", "slot-label", describeSlot(slot)));
       }
@@ -4325,7 +4371,6 @@
       button.addEventListener("click", () => chooseHand(card));
       button.addEventListener("dragstart", (event) => {
         setDragHoverTarget(null);
-        clearDragImage();
         draggedCardId = card.id;
         setDragImage(event, button);
         event.dataTransfer.effectAllowed = "move";
@@ -4333,7 +4378,6 @@
         chooseHand(card, true);
       });
       button.addEventListener("dragend", () => {
-        clearDragImage();
         if (draggedCardId !== card.id) return;
         draggedCardId = null;
         setDragHoverTarget(null);
@@ -4372,7 +4416,7 @@
     details.append(node("p", "detail-rank", `RANK ${card.rank} \xB7 ${card.colors.join(" / ").toUpperCase()}`));
     details.append(node("p", null, card.attributeText));
     const attribute = rune ? getRuneAttribute(rune) : card.attribute;
-    if (attribute === "spectral" || attribute === "masterful") {
+    if (attribute === "spectral" || attribute === "masterful" || attribute === "transpose") {
       details.append(node("p", "detail-tip", "This attribute can only be activated from the Frontline."));
     }
     const moreInfo = node("button", "button secondary more-info", "More info");
@@ -4482,12 +4526,14 @@
     $("board-turn").textContent = game.winner === null ? `${isAiTurn() ? "AI" : `PLAYER ${current + 1}`} \xB7 TURN ${game.turn}` : "BATTLE OVER";
     $("opponent-label").textContent = gameMode === "ai" ? "AI" : `PLAYER ${other + 1}`;
     const opponentHandCount = game.players[other].hand.length;
-    const opponentHandLabel = `OPPONENT \xB7 ${opponentHandCount} CARD${opponentHandCount === 1 ? "" : "S"} IN HAND`;
+    const opponentRuneCount = game.players[other].slots.filter(Boolean).length;
+    const opponentHandLabel = `OPPONENT \xB7 ${opponentRuneCount}/${game.runeLimit} RUNES \xB7 ${opponentHandCount} CARD${opponentHandCount === 1 ? "" : "S"} IN HAND`;
     if ($("opponent-hand-count").textContent !== opponentHandLabel) $("opponent-hand-count").textContent = opponentHandLabel;
     $("command-turn").textContent = game.winner === "draw" ? "ROUND DRAWN" : isAiTurn() ? "AI TURN" : "YOUR TURN";
     $("command-title").textContent = game.winner === "draw" ? "Play another round" : isAiTurn() ? "AI is playing" : "Make your move";
     $("message").textContent = message;
     $("no-progress").textContent = `Turns without progress: ${game.noProgressTurns}/${NO_PROGRESS_TURN_LIMIT}`;
+    $("rune-capacity").textContent = `Runes in play: ${game.players[viewer].slots.filter(Boolean).length}/${game.runeLimit}`;
     const links = getEffectLinks(game);
     renderRow("opponent-back", other, 4, links, preservedRune);
     renderRow("opponent-front", other, 0, links, preservedRune);
@@ -4573,7 +4619,6 @@
     setDragHoverTarget(null);
   });
   $("battlefield").addEventListener("drop", (event) => {
-    clearDragImage();
     const slot = event.target.closest(".slot.legal");
     if (!slot) {
       setDragHoverTarget(null);
@@ -4659,6 +4704,9 @@
       selection.targetSlots = [];
       const count = selectedActions().find((action) => action.type === "attribute").targetSlots.length;
       message = `Choose ${count} different enemy rune${count === 1 ? "" : "s"} for Acid (0/${count}). ${rune.stack.at(-1).name} will be destroyed.`;
+    } else if (attribute === "transpose") {
+      selection.targetSlots = [];
+      message = "Choose two opposing runes to swap. Both positions must be legal; Transpose ignores Snare.";
     } else if (attribute === "fire-ball") {
       message = `Choose Fire Ball's main enemy target for 2 damage. All other enemies take 1 damage; ${rune.stack.at(-1).name} will be destroyed.`;
     } else if (attribute === "magma") {
@@ -5109,7 +5157,8 @@
     });
     const randomStarter = $("starting-player").value === "random";
     const chosenStarter = randomStarter ? Math.random() < 0.5 ? 0 : 1 : Number($("starting-player").value);
-    const nextGame = createGame(decks, chosenStarter);
+    const runeLimit = Number($("rune-limit").value);
+    const nextGame = createGame(decks, chosenStarter, runeLimit);
     cancelAiTurn();
     cancelBoardAnimation();
     resetFeedback();
@@ -5177,7 +5226,7 @@
     resetFeedback();
     startingPlayer = 1 - startingPlayer;
     visualColumnOrder = [[0, 1, 2, 3], [0, 1, 2, 3]];
-    game = createGame(playerDecks, startingPlayer);
+    game = createGame(playerDecks, startingPlayer, game.runeLimit);
     roundNumber++;
     if (aiLog) recordAiLogRound(aiLog, roundNumber, game);
     const starterName = gameMode === "ai" && startingPlayer === 1 ? "AI" : `Player ${startingPlayer + 1}`;
