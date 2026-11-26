@@ -50,8 +50,10 @@ h2 { font-size: 18px; color: #f4e9d3; }
 .effect-link { fill: none; stroke-width: 3; filter: drop-shadow(0 0 3px #10191d); }
 .effect-link.spectral { stroke: #dbb2fa; stroke-dasharray: 6 4; }
 .effect-link.amplifying { stroke: #7ff1d9; }
+.effect-link.soulbind { stroke: #9ad56d; stroke-dasharray: 3 3; }
 .effect-arrow.spectral { fill: #dbb2fa; }
 .effect-arrow.amplifying { fill: #7ff1d9; }
+.effect-arrow.soulbind { fill: #9ad56d; }
 .effect-link.focus-copy, .effect-link.focus-preview { stroke: #fff0a8; stroke-width: 4; }
 .effect-arrow.focus-copy, .effect-arrow.focus-preview { fill: #fff0a8; }
 .effect-link.target-attack { stroke: #ff6262; stroke-width: 4; }
@@ -450,6 +452,7 @@ select, .deck-save input, #snapshot-name { min-width: 0; padding: 8px; color: #e
 #deck-dialog {
   width: min(1080px, 94vw);
   max-width: none;
+  height: 92vh;
   max-height: 92vh;
   overflow: hidden;
   padding: 0;
@@ -459,7 +462,7 @@ select, .deck-save input, #snapshot-name { min-width: 0; padding: 8px; color: #e
   background: #101a1e;
 }
 #deck-dialog::backdrop { background: #050a0ddc; }
-.deck-editor { display: flex; flex-direction: column; max-height: calc(92vh - 2px); overflow: hidden; padding: 22px; gap: 12px; }
+.deck-editor { display: flex; flex-direction: column; height: calc(92vh - 2px); max-height: calc(92vh - 2px); overflow: hidden; padding: 22px; gap: 12px; }
 .deck-header, .deck-players, .deck-footer { display: flex; align-items: center; gap: 10px; }
 .deck-header > div { flex: 1; }
 .deck-header h2 { margin-top: 5px; font-size: 23px; }
