@@ -438,6 +438,9 @@ button.hand-card:active { cursor: grabbing; }
 .menu-card h2 { margin-top: 5px; font-size: 25px; }
 .menu-card p:not(.eyebrow) { color: #bac2b4; font-size: 13px; line-height: 1.5; }
 .menu-actions { display: grid; gap: 10px; }
+.snapshot-list { display: grid; gap: 8px; }
+.snapshot-entry { display: flex; align-items: center; justify-content: space-between; gap: 10px; color: #bac2b4; font-size: 13px; }
+.snapshot-entry button { flex: 0 0 auto; padding: 5px 9px; font-size: 11px; }
 .mode-options { display: flex; flex-wrap: wrap; gap: 10px; }
 .mode-selected { border-color: #f0d7a2; color: #f4dfb0; background: #50452d; }
 .setup-difficulty { display: flex; align-items: center; gap: 12px; color: #ead4a6; font-size: 12px; font-weight: 700; }
