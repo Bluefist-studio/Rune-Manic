@@ -661,7 +661,7 @@
     return success ? 0 : damage;
   }
   function incomingAttributeDamage(game2, target, source, damage, targetPlayer, targetSlot, rollDie) {
-    if (targetSlot >= FRONTLINE_SIZE && getRuneAttribute(target) === "cloak") return 0;
+    if (isBacklineCloak(target, targetSlot)) return 0;
     return incomingDamage(
       game2,
       target,
@@ -671,6 +671,9 @@
       targetSlot,
       rollDie
     );
+  }
+  function isBacklineCloak(rune, slot) {
+    return Boolean(rune) && slot >= FRONTLINE_SIZE && getRuneAttribute(rune) === "cloak";
   }
   function resolveAttack(game2, attackerPlayer, action, deflect, rollDie, destroy) {
     const defenderPlayer = 1 - attackerPlayer;
@@ -725,7 +728,7 @@
     }
     if (lightningDefends) disableThroughNextTurn(game2, attacker, attackerPlayer);
     const backSlot = action.target + FRONTLINE_SIZE;
-    const backRune = getRuneAttribute(attacker) === "powerful" ? opponent.slots[backSlot] : null;
+    const backRune = getRuneAttribute(attacker) === "powerful" && !isBacklineCloak(opponent.slots[backSlot], backSlot) ? opponent.slots[backSlot] : null;
     dealDamage(game2, attacker, damageToAttacker);
     dealDamage(game2, defender, damageToDefender);
     if (backRune && getRuneAttribute(backRune) !== "intangible") {
@@ -737,7 +740,7 @@
       const owner = game2.players[targetPlayer];
       for (let slot = 0; slot < SLOT_COUNT; slot++) {
         const target = owner.slots[slot];
-        if (!target || slot === excludedSlot || getRuneAttribute(target) === "intangible") continue;
+        if (!target || slot === excludedSlot || getRuneAttribute(target) === "intangible" || isBacklineCloak(target, slot)) continue;
         dealDamage(game2, target, incomingAttributeDamage(game2, target, source, 1, targetPlayer, slot, rollDie));
         splinterHits.push({ source, sourcePlayer, target, targetPlayer, slot });
       }
@@ -1155,8 +1158,13 @@
         rune.stack.push(takeCard(player, action.cardId));
         rune.acted = true;
         rune.actionUsedThisTurn = true;
+        if (action.slot >= FRONTLINE_SIZE && !player.slots[action.slot - FRONTLINE_SIZE] && getRuneAttribute(rune) !== "phantom") {
+          player.slots[action.slot - FRONTLINE_SIZE] = rune;
+          player.slots[action.slot] = null;
+        }
+        const runeSlot = player.slots.indexOf(rune);
         if (getRuneStats(rune, player).health <= 0) {
-          destroy(next.currentPlayer, action.slot);
+          destroy(next.currentPlayer, runeSlot);
           updateWinner(next);
         }
         break;
@@ -1721,7 +1729,7 @@
     [["fortitude"], "The health bonus and attack penalty remain in effect while defending, including when disabled."],
     [["piercing-major"], "Piercing Major also gains +1 attack, including when attacking Intangible."],
     [["mending"], "Mending uses an action to restore 1 damage to a damaged friendly rune, including itself, a friendly rune in the backline, or friendly Intangible. It cannot target an opponent's rune or an undamaged rune, or restore lost temporary health."],
-    [["powerful"], "Powerful damages the rune originally behind its target before that rune moves forward, even if Powerful or its target is destroyed in combat."],
+    [["powerful"], "Powerful damages the rune originally behind its target before that rune moves forward, even if Powerful or its target is destroyed in combat. A Cloak in the backline is immune to this extra damage."],
     [["haunting"], "Haunting curses a surviving rune that destroys it through combat or an attribute, whether Haunting was attacking or defending. The -1 attack penalty remains through upgrades and is not cumulative."],
     [["fire", "magma"], "Fire and Magma target only enemy runes, including those in the backline. If Fire destroys both players' last runes, the round is a draw."],
     [["magma"], "Magma chooses its target before rolling a six-sided die and uses its action even on a failed roll. On 3+ it deals 2 damage."],
@@ -1748,7 +1756,7 @@
     [["soulbind"], "Soulbind uses an action from either row to link to another friendly rune in either row until the start of its owner's next turn. The link follows the target through movement and upgrades. A rune can have only one Soulbind protector; the newest link replaces the old one. Soulbind cannot target another Soulbind. Its link is suppressed while it is disabled or stunned, and ends if Soulbind is destroyed or upgraded."],
     [["soulbind", "hardened", "deflecting", "deflecting-major", "intangible"], "The linked rune's normal damage reductions and Deflecting resolve first. Any HP loss that remains, including HP costs paid by abilities, is redirected to Soulbind and uses its temporary HP before HP. Soulbind's own defenses do not apply again. Damage beyond Soulbind's remaining HP does not spill over, except for a linked Bolt's HP cost: Soulbind pays first, and Bolt pays any remainder. Once Soulbind is destroyed, later hits affect the linked rune normally."],
     [["focus", "soulbind"], "Focus can copy Soulbind and use its link normally. The link ends at the start of Focus's next turn even if it chooses Soulbind again."],
-    [["splinter", "intangible", "deflecting", "deflecting-major"], "When Splinter deals damage in combat, attacking or defending, it deals 1 extra damage to up to three other enemy runes, including backline runes. It still does so if destroyed in that combat. Intangible is immune to the extra damage, and each Deflecting rune rolls separately."],
+    [["splinter", "intangible", "deflecting", "deflecting-major", "cloak"], "When Splinter deals damage in combat, attacking or defending, it deals 1 extra damage to up to three other enemy runes, including backline runes. It still does so if destroyed in that combat. Intangible and backline Cloak are immune to the extra damage, and each Deflecting rune rolls separately."],
     [["masterful", "intangible", "deflecting", "deflecting-major"], "Masterful can use its action in the frontline to trade 1-4 of its current hit points, including its last, for equal damage distributed among enemy runes, including the backline. Intangible cannot be selected. Targets do not retaliate, and it may instead choose a normal attack. Damage resolves before the source is destroyed; Deflecting rolls separately for each point assigned. The cost is paid even if damage is negated."],
     [["masterful", "hardened"], "Masterful resolves each assigned damage point as a separate hit, so Hardened reduces each of those hits by 1."],
     [["focus"], "At the very start of each owner's turn, each enabled, non-stunned Focus chooses another friendly rune's attribute or none without using its action. The source may be in either row, disabled, or stunned, but cannot be another Focus. A newly upgraded Focus waits until its next turn."],
@@ -1769,7 +1777,7 @@
     [["frenzy"], "Frenzy can attack twice per turn by default. Its first attack uses its action, then one second attack is allowed without granting another upgrade or attribute action. Command can grant further attacks beyond this limit, one per Command-granted action. Upgrading or using an action instead of attacking prevents its attacks that turn; movement remains separate. The attack count resets at the start of its owner's turn."],
     [["snare"], "Snare uses an action from either row to target an eligible enemy rune in either row. The target cannot move or swap during its next turn, but may still attack, upgrade, and use attributes. The restriction ends when that turn ends; Intangible and a backline Cloak cannot be targeted."],
     [["phoenix"], "When Phoenix is destroyed, roll a six-sided die. On 4+, return its top card to its owner's hand instead of the destroyed pile. It can return from any kind of destruction."],
-    [["phantom"], "Phantom may be played or moved into a backline slot even when the frontline slot in that column is empty. Other runes still require a frontline rune to remain in front of them."],
+    [["phantom"], "Phantom may be played or moved into a backline slot even when the frontline slot in that column is empty. If it is upgraded there into a rune that is not Phantom, it immediately moves into the empty frontline slot. Other runes still require a frontline rune to remain in front of them."],
     [["cloak"], "While Cloak is in the backline, enemy attributes cannot target it. This also prevents attribute damage that would otherwise reach it as a secondary target; attacks are unaffected."]
   ];
   var generalRuneRules = [
@@ -2714,7 +2722,7 @@
         const nextSlot = newSlots.findIndex((other) => other?.stack[0].id === rune.stack[0].id);
         if (nextSlot < 0) {
           destroyed.push({ player, slot });
-        } else if (slot >= 4 && nextSlot === slot - 4 && oldSlots[nextSlot] && !newSlots.some((other) => other?.stack[0].id === oldSlots[nextSlot].stack[0].id)) {
+        } else if (slot >= 4 && nextSlot === slot - 4 && (!oldSlots[nextSlot] || !newSlots.some((other) => other?.stack[0].id === oldSlots[nextSlot].stack[0].id))) {
           promoted.push({ player, from: slot, to: nextSlot });
         }
       }
@@ -2808,6 +2816,8 @@
   var draggedCardId = null;
   var draggedRune = null;
   var dragHoverTarget = null;
+  var activeDragPreview = null;
+  var transparentDragImage = null;
   var handOrder = "rank";
   var visualColumnOrder = [[0, 1, 2, 3], [0, 1, 2, 3]];
   var targetPreview = null;
@@ -2833,13 +2843,58 @@
   var boardAnimation = null;
   var victoryPending = false;
   var message = "Select a rank 1 rune from your hand to begin.";
-  function setDragImage(event, source) {
+  function startDragPreview(event, source) {
+    clearDragPreview();
     const bounds = source.getBoundingClientRect();
-    event.dataTransfer.setDragImage(
-      source,
-      Math.round(event.clientX - bounds.left),
-      Math.round(event.clientY - bounds.top)
-    );
+    const preview = source.cloneNode(true);
+    preview.classList.add("drag-image-preview");
+    preview.removeAttribute("id");
+    preview.querySelectorAll("[id]").forEach((element) => element.removeAttribute("id"));
+    preview.setAttribute("aria-hidden", "true");
+    preview.draggable = false;
+    preview.querySelectorAll("img").forEach((image) => {
+      image.draggable = false;
+    });
+    Object.assign(preview.style, {
+      position: "fixed",
+      left: `${bounds.left}px`,
+      top: `${bounds.top}px`,
+      width: `${bounds.width}px`,
+      height: `${bounds.height}px`,
+      margin: "0",
+      pointerEvents: "none",
+      zIndex: "10000",
+      opacity: "0.92",
+      transform: "none"
+    });
+    document.body.appendChild(preview);
+    activeDragPreview = {
+      element: preview,
+      offsetX: event.clientX - bounds.left,
+      offsetY: event.clientY - bounds.top
+    };
+    if (!transparentDragImage) {
+      transparentDragImage = document.createElement("canvas");
+      transparentDragImage.width = 1;
+      transparentDragImage.height = 1;
+      Object.assign(transparentDragImage.style, {
+        position: "fixed",
+        left: "0",
+        top: "0",
+        pointerEvents: "none"
+      });
+      document.body.appendChild(transparentDragImage);
+    }
+    event.dataTransfer.setDragImage(transparentDragImage, 0, 0);
+  }
+  function updateDragPreview(event) {
+    if (!activeDragPreview) return;
+    activeDragPreview.element.style.left = `${event.clientX - activeDragPreview.offsetX}px`;
+    activeDragPreview.element.style.top = `${event.clientY - activeDragPreview.offsetY}px`;
+  }
+  function clearDragPreview() {
+    activeDragPreview?.element.remove();
+    activeDragPreview = null;
   }
   function viewPlayer() {
     return gameMode === "ai" ? 0 : game.currentPlayer;
@@ -3084,7 +3139,7 @@
     const destructionDelay = moves.length || handCardTravel ? 600 : 0;
     const deathAnimationDuration = 650;
     const burstLeadIn = 1100;
-    const slotMovementDelay = destructionDelay + deathAnimationDuration + burstLeadIn;
+    const slotMovementDelay = destroyed.length ? destructionDelay + deathAnimationDuration + burstLeadIn : moves.length ? 600 : handCardTravel ? 650 : 0;
     for (const item of destroyed) {
       const { clone } = cloneRune(item.player, item.slot);
       if (action.type === "upgrade" && item.player === before.currentPlayer && item.slot === action.slot) {
@@ -3128,8 +3183,15 @@
         }, burstLifetime));
       };
     }
+    const animatedMoveSources = new Set(moves.map((move) => `${move.player}:${move.from}`));
     for (const item of promoted) {
+      if (animatedMoveSources.has(`${item.player}:${item.from}`)) continue;
       const { clone, rect } = cloneRune(item.player, item.from);
+      if (action.type === "upgrade" && action.slot === item.from) {
+        const card = after.players[item.player].slots[item.to].stack.at(-1);
+        clone.querySelector(".card-art").src = card.image;
+        clone.querySelector(".card-rank").src = `Cards online/rank${card.rank}.png`;
+      }
       const { x, y } = delta(rect, afterRects.get(`${item.player}:${item.to}`));
       animate(
         clone,
@@ -4281,7 +4343,7 @@
           button.draggable = true;
           button.addEventListener("dragstart", (event) => {
             setDragHoverTarget(null);
-            setDragImage(event, button);
+            startDragPreview(event, button);
             draggedRune = { player: playerIndex, slot };
             event.dataTransfer.effectAllowed = "move";
             event.dataTransfer.setData("text/plain", card.name);
@@ -4466,7 +4528,7 @@
       button.addEventListener("dragstart", (event) => {
         setDragHoverTarget(null);
         draggedCardId = card.id;
-        setDragImage(event, button);
+        startDragPreview(event, button);
         event.dataTransfer.effectAllowed = "move";
         event.dataTransfer.setData("text/plain", card.name);
         chooseHand(card, true);
@@ -4707,6 +4769,18 @@
     event.preventDefault();
     event.dataTransfer.dropEffect = "move";
     setDragHoverTarget(slot);
+  });
+  document.addEventListener("drag", updateDragPreview);
+  document.addEventListener("dragover", updateDragPreview);
+  document.addEventListener("dragend", clearDragPreview);
+  document.addEventListener("drop", clearDragPreview);
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState !== "hidden" || !draggedCardId && !draggedRune) return;
+    clearDragPreview();
+    draggedCardId = null;
+    draggedRune = null;
+    setDragHoverTarget(null);
+    cancelSelection();
   });
   $("battlefield").addEventListener("dragleave", (event) => {
     if (event.relatedTarget && $("battlefield").contains(event.relatedTarget)) return;
