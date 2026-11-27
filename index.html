@@ -200,6 +200,7 @@
         <button id="victory-next-round" class="button primary" type="button" hidden>Play next round</button>
         <button id="victory-new-game" class="button primary" type="button">New game</button>
         <button id="victory-close" class="button secondary" type="button" autofocus>View battlefield</button>
+        <button id="victory-menu" class="button secondary" type="button">Menu</button>
       </div>
     </div>
   </dialog>
@@ -283,7 +284,7 @@
       <label class="setup-difficulty" for="snapshot-name">Saved opponent name</label>
       <input id="snapshot-name" type="text" maxlength="80" placeholder="Level 30">
       <button id="snapshot-save" class="button secondary" type="button">Save current AI as opponent</button>
-      <p id="snapshot-list"></p>
+      <div id="snapshot-list" class="snapshot-list" aria-label="Saved AI opponents"></div>
       <div class="menu-actions">
         <button id="learning-export" class="button secondary" type="button">Export learning data</button>
         <button id="learning-import" class="button secondary" type="button">Import learning data</button>
