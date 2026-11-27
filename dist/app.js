@@ -118,7 +118,7 @@
       rank: 4,
       colors: ["black"],
       attribute: "execution",
-      attributeText: "When attacking a rune that has lost 1 or more HP, destroy it without taking damage.",
+      attributeText: "When attacking a wounded rune, destroy it and take 1 damage.",
       image: "Cards online/RM_Card_R3 Execution.png"
     },
     transpose: {
@@ -684,7 +684,8 @@
     if (getRuneAttribute(attacker) === "frenzy") {
       attacker.attacksUsed = (attacker.attacksUsed ?? 0) + 1;
     }
-    const execution = getRuneAttribute(attacker) === "execution" && defender.damage > 0 && getRuneAttribute(defender) !== "intangible";
+    const defenderAttribute = getRuneAttribute(defender);
+    const execution = getRuneAttribute(attacker) === "execution" && defender.damage > 0 && defenderAttribute !== "intangible";
     if (execution) {
       let prevented = false;
       if (deflect && isDeflecting(defender)) {
@@ -692,13 +693,14 @@
         prevented = game2.lastDeflections.at(-1).success;
       }
       if (!prevented) {
-        if (getRuneAttribute(defender) === "lightning" && getRuneAttribute(attacker) !== "intangible") {
+        if (defenderAttribute === "lightning" && getRuneAttribute(attacker) !== "intangible") {
           disableThroughNextTurn(game2, attacker, attackerPlayer);
         }
-        if (getRuneAttribute(defender) === "haunting" && getRuneStats(attacker, player).health > 0) {
+        destroy(defenderPlayer, action.target);
+        dealDamage(game2, attacker, 1);
+        if (defenderAttribute === "haunting" && getRuneStats(attacker, player).health > 0) {
           attacker.haunted = true;
         }
-        destroy(defenderPlayer, action.target);
       }
       if (getRuneStats(attacker, player).health <= 0) destroy(attackerPlayer, action.slot);
       updateWinner(game2);
@@ -1759,7 +1761,7 @@
     [["command"], "Command uses its action from either row to refresh another friendly rune's action after it has already used an action this turn. Upgrading counts as using an action, but playing a rune does not. The target may take one additional attack, attribute, or upgrade; movement remains separate. Command does not sacrifice itself. Each Command can refresh an ally once, and another Command may refresh that ally after it uses the granted action. Command can let Frenzy exceed its usual two-attack limit by one attack for each Command-granted action. Focus copying Command follows the same rules."],
     [["recall"], "Recall uses an action from either row to return another friendly rune from either row to its owner's hand. It returns every card in the rune's upgrade stack; Recall cannot target itself. If a frontline rune is returned, a friendly rune behind it immediately moves forward. Recalling a rune is not destruction, so it does not trigger destruction effects. Focus copying Recall follows the same rules."],
     [["transpose"], "Transpose uses its action from the frontline only. Its controller chooses two eligible opposing runes and swaps their positions. The swap is allowed only if both resulting positions are legal; a backline rune needs its corresponding frontline occupied unless it is Phantom. Intangible and a backline Cloak cannot be selected. Transpose ignores Snare and does not consume either target's normal movement. Focus copying Transpose follows the same rules."],
-    [["execution"], "Execution uses its normal attack action, which can only be made from the frontline. If the target's current HP is below its current maximum HP and it is not defending Intangible, destroy it immediately without normal combat damage or retaliation. Losing temporary HP alone does not qualify because it also lowers current maximum HP. Deflecting rolls as usual: a successful roll prevents Execution, while a failed roll leaves the target to be destroyed. Normal destruction effects still resolve. Focus copying Execution follows the same rules."],
+    [["execution"], "Execution uses its normal attack action, which can only be made from the frontline. If the target's current HP is below its current maximum HP and it is not defending Intangible, destroy it immediately without normal combat damage or retaliation; Execution takes 1 damage when this succeeds. Losing temporary HP alone does not qualify because it also lowers current maximum HP. Deflecting rolls as usual: a successful roll prevents Execution and its 1 damage cost, while a failed roll leaves the target to be destroyed and Execution takes 1 damage. Normal destruction effects still resolve. Focus copying Execution follows the same rules."],
     [["infusion", "intangible"], "Infusion uses its action from either row to give another friendly rune +2 attack until the start of its owner's next turn. It costs Infusion 1 HP, temporary HP first; it may spend its last HP and still resolve. Infusion bonuses stack and remain if Infusion leaves play or the target upgrades. The bonus applies while defending and even against defending Intangible. Focus copying Infusion follows the same rules."],
     [["guardian"], "Each enabled Guardian reduces each instance of damage dealt to a friendly backline rune by 1. Guardians stack with each other and Hardened, and reduction cannot lower damage below zero. This applies to combat, attributes, secondary hits, and returned deflection damage, but not HP costs paid by the rune's owner. Piercing and Piercing Major ignore Guardian's damage reduction."],
     [["ambush"], "Ambush always deals its normal attack damage. It adds 1 damage only when attacking a rune marked as not acted. A rune that acted during its owner's turn remains marked as acted during the opponent's following turn; the state resets when its owner starts their next turn. Moving alone does not count as acting. This bonus applies when attacking Intangible."],
@@ -2516,7 +2518,7 @@
     );
     const failedExecutionDeflection = action.type === "deflectAttack" && executionResponse && !after.lastDeflections.at(-1)?.success;
     if (executionAttack || action.type === "acceptAttack" && executionResponse || failedExecutionDeflection) {
-      details.push("Execution destroyed the wounded target without retaliation.");
+      details.push("Execution destroyed the wounded target and took 1 damage.");
     }
     for (let player = 0; player < before.players.length; player++) {
       const oldOwner = before.players[player];
@@ -3853,7 +3855,7 @@
       handoffPrompt = handoff ? `Player ${previous.currentPlayer + 1} chose to ${action.type === "deflectAttack" ? "deflect" : "take the normal attack"}. Pass the device back to Player ${game.currentPlayer + 1}.` : null;
       message = action.type === "deflectAttack" ? `${defender} chose to deflect.` : `${defender} chose to take the normal attack.`;
       if (executionAttack) {
-        message += action.type === "deflectAttack" ? deflected ? " Execution was stopped by the successful deflection." : " The deflection failed to stop Execution; the target was destroyed." : " Execution destroyed the wounded target without retaliation.";
+        message += action.type === "deflectAttack" ? deflected ? " Execution was stopped by the successful deflection." : " The deflection failed to stop Execution; the target was destroyed and Execution took 1 damage." : " Execution destroyed the wounded target and took 1 damage.";
       }
     } else if (action.type === "endTurn") {
       handoff = gameMode === "local";
@@ -3921,7 +3923,7 @@
         upgrade: "Rune upgraded.",
         attack: "Attack resolved. Check each rune's remaining health."
       };
-      message = action.type === "attack" && executionAttack ? "Execution destroyed the wounded target without retaliation." : descriptions[action.type];
+      message = action.type === "attack" && executionAttack ? "Execution destroyed the wounded target and took 1 damage." : descriptions[action.type];
     }
     const lostFocus = incomingFocusIds.filter((id) => !game.players[game.currentPlayer].slots.some((rune) => rune?.stack[0].id === id)).length;
     if (lostFocus) {
@@ -4250,7 +4252,7 @@
       if (damagePreview) {
         const amount = attributePreview?.variable ? `0-${damagePreview.damage}` : damagePreview.deflectable ? `UP TO ${damagePreview.damage}` : String(damagePreview.damage);
         if (attackPreview?.execution) {
-          const outcome = attackPreview.deflectable ? "Execution destroys unless deflected" : "Execution destroys without retaliation";
+          const outcome = attackPreview.deflectable ? "Execution destroys unless deflected; it takes 1 damage if successful" : "Execution destroys and takes 1 damage";
           button.setAttribute("aria-label", `${button.getAttribute("aria-label")}, ${outcome}`);
         } else {
           button.setAttribute("aria-label", `${button.getAttribute("aria-label")}, ${amount} damage`);
@@ -4344,7 +4346,7 @@
             attackPreview?.execution ? attackPreview.deflectable ? "EXEC*" : "EXEC" : `${amount} DMG`
           );
           if (attackPreview?.execution) {
-            preview.title = attackPreview.deflectable ? "Execution destroys this wounded target unless Deflecting succeeds." : "Execution destroys this wounded target without retaliation.";
+            preview.title = attackPreview.deflectable ? "Execution destroys this wounded target unless Deflecting succeeds; it takes 1 damage if successful." : "Execution destroys this wounded target and takes 1 damage.";
           }
           statusEffects.append(preview);
         }
