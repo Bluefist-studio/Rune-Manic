@@ -46,15 +46,15 @@
       rank: 2,
       colors: ["green", "black"],
       attribute: "ambush",
-      attributeText: "Deals +1 damage when attacking a rune that has not yet acted this turn.",
+      attributeText: "Always deals normal attack damage; +1 if the target has not acted this turn.",
       image: "Cards online/RM_Card_G2 Ambush.png"
     },
     berserk: {
       name: "Berserk",
-      rank: 2,
+      rank: 3,
       colors: ["red"],
       attribute: "berserk",
-      attributeText: "Has +1 HP and gains +1 attack for each HP lost.",
+      attributeText: "Gains +1 attack for each HP lost.",
       image: "Cards online/RM_Card_R2 Berserk4.png"
     },
     frenzy: {
@@ -246,7 +246,7 @@
       rank: 3,
       colors: ["orange"],
       attribute: "intangible",
-      attributeText: "While defending, attacking rune's attributes have no effect against this rune",
+      attributeText: "While defending, negates attacking attributes that directly affect this rune.",
       image: "Cards online/RM_Card_O3 Intangible4.png"
     },
     magma: {
@@ -350,7 +350,7 @@
       rank: 2,
       colors: ["red"],
       attribute: "uprising",
-      attributeText: "For each Brawling rune in play this rune gets +1 to its attack",
+      attributeText: "When attacking, gets +1 attack if you have at least one Brawling rune in play.",
       image: "Cards online/RM_Card_R2 Uprising4.png"
     },
     piercingMajor: {
@@ -372,7 +372,7 @@
     masterful: {
       name: "Masterful",
       rank: 4,
-      colors: ["red", "black"],
+      colors: ["red"],
       attribute: "masterful",
       attributeText: "When attacking with this rune, trade hit points for damage on 1 or more runes.",
       image: "Cards online/RM_Card_R4 Masterful4.png"
@@ -496,17 +496,19 @@
       }
     }
   }
-  function getRuneStats(rune, owner) {
+  function getRuneStats(rune, owner, { isAttacking = true } = {}) {
     const card = currentCard(rune);
     const attribute = getRuneAttribute(rune);
-    const healthBonus = attribute === "brawling" || attribute === "berserk" ? 1 : attribute === "fortitude" ? 2 : 0;
+    const healthBonus = attribute === "brawling" ? 1 : attribute === "fortitude" ? 2 : 0;
     let attackBonus = (attribute === "fortitude" ? -1 : attribute === "piercing-major" ? 1 : 0) + (rune.amplification ?? 0) + (rune.infusionAttackBonus ?? 0);
     if (attribute === "berserk") attackBonus += rune.damage;
     if (attribute === "uprising") {
       if (!owner || !Array.isArray(owner.slots)) {
         throw new Error("Uprising's stats require its owner.");
       }
-      attackBonus += owner.slots.filter((other) => other && currentCard(other).name === "Brawling").length;
+      if (isAttacking && owner.slots.some((other) => other && currentCard(other).name === "Brawling")) {
+        attackBonus++;
+      }
     }
     if (rune.haunted) attackBonus--;
     const maxHealth = card.rank + healthBonus + rune.temporaryHealth;
@@ -527,10 +529,9 @@
     return Math.max(0, damage - reduction);
   }
   function combatDamage(source, target, sourceOwner, targetIsDefending, game2, targetPlayer, targetSlot) {
-    const card = currentCard(source);
     const attribute = getRuneAttribute(source);
     const ambushBonus = targetIsDefending && attribute === "ambush" && !target.acted ? 1 : 0;
-    const attack = targetIsDefending && getRuneAttribute(target) === "intangible" ? card.rank - (attribute === "fortitude" ? 1 : 0) - (source.haunted ? 1 : 0) + (source.amplification ?? 0) + (source.infusionAttackBonus ?? 0) : getRuneStats(source, sourceOwner).attack + ambushBonus;
+    const attack = getRuneStats(source, sourceOwner, { isAttacking: targetIsDefending }).attack + ambushBonus;
     return targetIsDefending ? defendingDamage(source, target, attack, game2, targetPlayer, targetSlot) : Math.max(0, attack);
   }
   function getAttackDamage(game2, sourceSlot, targetSlot) {
@@ -891,7 +892,10 @@
         }
       }
       if (attribute === "bolt") {
-        for (let amount = 1; amount <= getRuneStats(rune, player).health && effectiveTargets.length; amount++) {
+        const soulbindSlot = activeSoulbindSlot(game2, game2.currentPlayer, rune);
+        const soulbindHealth = soulbindSlot >= 0 ? getRuneStats(player.slots[soulbindSlot], player).health : 0;
+        const maxCost = getRuneStats(rune, player).health + soulbindHealth;
+        for (let amount = 1; amount <= maxCost && effectiveTargets.length; amount++) {
           for (const targetSlots of targetAllocations(effectiveTargets, amount)) {
             actions.push({ type: "attribute", slot, targetPlayer: 1 - game2.currentPlayer, targetSlots });
           }
@@ -1145,6 +1149,7 @@
         delete rune.commandedActionAvailable;
         delete rune.focusCopy;
         delete rune.focusChoicePending;
+        if (getRuneAttribute(rune) === "growth") rune.temporaryHealth = 0;
         rune.stack.push(takeCard(player, action.cardId));
         rune.acted = true;
         rune.actionUsedThisTurn = true;
@@ -1182,7 +1187,12 @@
           break;
         }
         if (attribute === "bolt") {
-          dealDamage(next, source, action.targetSlots.length);
+          const soulbindSlot = activeSoulbindSlot(next, next.currentPlayer, source);
+          const soulbindHealth = soulbindSlot >= 0 ? getRuneStats(player.slots[soulbindSlot], player).health : 0;
+          const soulbindCost = Math.min(action.targetSlots.length, soulbindHealth);
+          if (soulbindCost > 0) dealDamage(next, source, soulbindCost);
+          const boltCost = action.targetSlots.length - soulbindCost;
+          if (boltCost > 0) dealDamage(next, source, boltCost);
           const targets = [...new Set(action.targetSlots)].sort((a, b) => a - b);
           for (const slot of targets) {
             const target2 = opponent.slots[slot];
@@ -1622,7 +1632,7 @@
     return chains.flat();
   }
   function chooseRandomDeck(savedDecks2, random = Math.random) {
-    const choices = [...prebuiltDecks, ...savedDecks2];
+    const choices = [...prebuiltDecks, ...savedDecks2.filter((entry) => !entry.invalidReason)];
     const roll = random();
     if (!Number.isFinite(roll) || roll < 0 || roll >= 1) {
       throw new Error("Random deck selection requires a number between 0 and 1.");
@@ -1650,8 +1660,18 @@
       }
       names.add(record.name.toLowerCase());
       const deck = migratedKeys.map((key) => cards[key]);
-      validateDeck(deck);
-      return { name: record.name, deck };
+      let invalidReason = "";
+      try {
+        validateDeck(deck);
+      } catch (error) {
+        if (![
+          "A deck must contain at least one card.",
+          "A deck cannot exceed 24 total ranks.",
+          "A deck must contain a rank 1 rune."
+        ].includes(error.message)) throw error;
+        invalidReason = error.message;
+      }
+      return invalidReason ? { name: record.name, deck, invalidReason } : { name: record.name, deck };
     });
   }
   function saveDeck(storage, name, deck, overwrite = false) {
@@ -1695,15 +1715,15 @@
   var rulings = [
     [["hardened", "piercing", "piercing-major"], "Hardened reduces each incoming hit by 1 while defending, including damage from enemy attributes in either row. It does not reduce an attacker's retaliation damage or its own attribute costs. Piercing and Piercing Major ignore this damage reduction; Piercing can upgrade to Piercing Major."],
     [["any-next-rank"], "This rune can upgrade to any rune of the next rank, regardless of colour."],
-    [["brawling", "uprising"], "Uprising counts only its owner's visible Brawling runes. Brawling underneath an upgrade does not count, and Focus copying Brawling is not a Brawling card."],
+    [["brawling", "uprising"], "When attacking, Uprising gains +1 attack if its owner has at least one visible Brawling rune in play. Additional Brawling runes do not increase the bonus. Brawling underneath an upgrade does not count, and Focus copying Brawling is not a Brawling card. Uprising does not gain this bonus when retaliating."],
     [["fortitude"], "The health bonus and attack penalty remain in effect while defending, including when disabled."],
-    [["piercing-major"], "Piercing Major also gains +1 attack, except that defending Intangible ignores this bonus."],
+    [["piercing-major"], "Piercing Major also gains +1 attack, including when attacking Intangible."],
     [["mending"], "Mending uses an action to restore 1 damage to a damaged friendly rune, including itself, a friendly rune in the backline, or friendly Intangible. It cannot target an opponent's rune or an undamaged rune, or restore lost temporary health."],
     [["powerful"], "Powerful damages the rune originally behind its target before that rune moves forward, even if Powerful or its target is destroyed in combat."],
     [["haunting"], "Haunting curses a surviving rune that destroys it through combat or an attribute, whether Haunting was attacking or defending. The -1 attack penalty remains through upgrades and is not cumulative."],
     [["fire", "magma"], "Fire and Magma target only enemy runes, including those in the backline. If Fire destroys both players' last runes, the round is a draw."],
     [["magma"], "Magma chooses its target before rolling a six-sided die and uses its action even on a failed roll. On 3+ it deals 2 damage."],
-    [["intangible", "haunting", "fortitude", "piercing-major", "uprising"], "Defending Intangible ignores positive attack bonuses from the attacker's own attributes, but Haunting's existing penalty and Fortitude's attack penalty still apply. Intangible is immune to Haunting's curse while defending; if it attacks and destroys Haunting, it is cursed."],
+    [["intangible", "haunting", "fortitude", "piercing-major", "uprising", "ambush", "berserk", "amplifying", "infusion"], "While defending, Intangible negates attacking attributes that directly affect it, but does not suppress attacker-side bonuses: Uprising, Berserk, Piercing Major, Ambush, Amplifying, and Infusion bonuses still apply. The attacker's Haunting and Fortitude penalties also still apply. Intangible is immune to Haunting's curse while defending; if it attacks and destroys Haunting, it is cursed."],
     [["intangible", "fire", "magma", "mending"], "Intangible cannot be selected by enemy attributes that cannot affect it, including Fire and Magma. Mending may heal friendly Intangible."],
     [["intangible", "powerful"], "Powerful still damages the rune behind a defending Intangible. An Intangible behind the target is immune to that extra damage."],
     [["acid", "intangible"], "Acid uses an action to deal 1 damage to three different enemy runes, including backline runes, then destroys its source. It targets all eligible enemies if fewer than three are available. Intangible cannot be selected."],
@@ -1712,19 +1732,19 @@
     [["deflecting", "deflecting-major", "magma", "powerful", "acid", "fire-ball", "splinter", "masterful"], "Deflecting rolls only if Magma's own roll succeeds. Each hit Deflecting rune rolls separately, and all selected effects resolve even if returned damage destroys their source. Returned damage cannot itself be deflected. Powerful still damages the rune behind a successfully deflecting defender."],
     [["intangible", "deflecting", "deflecting-major"], "Intangible attacking Deflecting can have its attack negated and take returned damage; its combat immunity applies while defending."],
     [["lightning", "hardened"], "Lightning deals normal combat and retaliation damage. When it attacks, it disables the defending rune; when it is attacked, it disables the attacking rune. The disable lasts through the end of the target's next full turn, even if Lightning is destroyed or the target was already taking its turn. Hardened reduces damage normally but does not prevent the disable."],
-    [["lightning", "intangible", "deflecting", "deflecting-major"], "A successful Deflecting roll against Lightning's attack prevents the attack damage and disable; a failed roll leaves both. Intangible is immune to Lightning's disable in either role. When defending Intangible is attacked by Lightning, it ignores Lightning's effect and takes normal combat damage."],
+    [["lightning", "intangible", "deflecting", "deflecting-major"], "A successful Deflecting roll against Lightning's attack prevents the attack damage and disable; a failed roll leaves both. Intangible is immune to Lightning's disable in either role. When defending Intangible is attacked by Lightning, it ignores the disable and takes normal combat damage."],
     [["soul", "intangible", "deflecting", "deflecting-major"], "Soul chooses an enemy target, including in the backline, before rolling a six-sided die. Intangible cannot be selected. On 3+ Soul gains 1 hit point even if damage is negated. Soul heals existing damage first, then gains unlimited temporary health above its normal maximum. Lost temporary health cannot be restored."],
     [["soul", "deflecting", "deflecting-major"], "Soul gains its hit point before taking any returned deflection damage."],
     [["necrotic", "haunting"], "Each surviving, enabled Necrotic rolls separately for every other friendly rune destroyed, including destruction by its own attribute or an upgrade. It does not roll for itself or for an ally destroyed simultaneously with it. On 3+ it creates a Haunting in its owner's hand, even beyond the deck construction limit."],
     [["spectral", "intangible"], "Spectral uses its action from the frontline to disable an enemy, including one in the backline, until the start of Spectral's owner's next turn. Its effect also ends if Spectral is destroyed, upgraded, or moved to the backline. Intangible cannot be disabled."],
     [["spectral", "necrotic"], "A disabled rune cannot move, swap, upgrade, or act. Its defensive effects still work, including health and attack modifiers while defending, but other passive effects such as Necrotic's are suppressed."],
     [["spectral"], "Multiple Spectrals can disable the same rune; each effect must end for the target to be enabled. A disabled Spectral's effect is suppressed and automatically resumes when it is enabled again, provided the effect has not otherwise ended. If two Spectrals would disable each other, the later effect takes precedence."],
-    [["bolt", "intangible", "deflecting", "deflecting-major", "hardened"], "Bolt and Double Bolt work identically: use an action from either row to trade any number of current hit points, including the last, for equal damage distributed among enemy runes, including the backline. Damage assigned to each rune is one hit, so Hardened reduces it once and Deflecting rolls once per targeted rune. Intangible cannot be selected; the hit-point cost is paid even if damage is negated."],
+    [["bolt", "intangible", "deflecting", "deflecting-major", "hardened", "soulbind"], "Bolt and Double Bolt work identically: use an action from either row to trade any number of current hit points, including the last, for equal damage distributed among enemy runes, including the backline. Damage assigned to each rune is one hit, so Hardened reduces it once and Deflecting rolls once per targeted rune. Intangible cannot be selected; the hit-point cost is paid even if damage is negated. If Bolt is linked to Soulbind, its cost may use their combined current HP: Soulbind pays first, and Bolt pays any remainder."],
     [["haunting", "spectral"], "Disabled Haunting still curses a surviving rune that destroys it, including through a damage attribute."],
     [["amplifying", "intangible"], "Amplifying uses its action from either row to give another friendly rune +1 attack until the start of its owner's next turn. Bonuses stack, apply when defending, remain through the target's upgrade, and apply even against defending Intangible."],
     [["amplifying", "spectral", "lightning"], "An Amplifying bonus ends if its source is destroyed or upgraded. The bonus is suppressed while the source is disabled, and returns if the source recovers before the bonus expires. Moving the source does not end it."],
     [["soulbind"], "Soulbind uses an action from either row to link to another friendly rune in either row until the start of its owner's next turn. The link follows the target through movement and upgrades. A rune can have only one Soulbind protector; the newest link replaces the old one. Soulbind cannot target another Soulbind. Its link is suppressed while it is disabled or stunned, and ends if Soulbind is destroyed or upgraded."],
-    [["soulbind", "hardened", "deflecting", "deflecting-major", "intangible"], "The linked rune's normal damage reductions and Deflecting resolve first. Any HP loss that remains, including HP costs paid by abilities, is redirected to Soulbind and uses its temporary HP before HP. Soulbind's own defenses do not apply again. Damage beyond Soulbind's remaining HP does not spill over; once Soulbind is destroyed, later hits affect the linked rune normally."],
+    [["soulbind", "hardened", "deflecting", "deflecting-major", "intangible"], "The linked rune's normal damage reductions and Deflecting resolve first. Any HP loss that remains, including HP costs paid by abilities, is redirected to Soulbind and uses its temporary HP before HP. Soulbind's own defenses do not apply again. Damage beyond Soulbind's remaining HP does not spill over, except for a linked Bolt's HP cost: Soulbind pays first, and Bolt pays any remainder. Once Soulbind is destroyed, later hits affect the linked rune normally."],
     [["focus", "soulbind"], "Focus can copy Soulbind and use its link normally. The link ends at the start of Focus's next turn even if it chooses Soulbind again."],
     [["splinter", "intangible", "deflecting", "deflecting-major"], "When Splinter deals damage in combat, attacking or defending, it deals 1 extra damage to up to three other enemy runes, including backline runes. It still does so if destroyed in that combat. Intangible is immune to the extra damage, and each Deflecting rune rolls separately."],
     [["masterful", "intangible", "deflecting", "deflecting-major"], "Masterful can use its action in the frontline to trade 1-4 of its current hit points, including its last, for equal damage distributed among enemy runes, including the backline. Intangible cannot be selected. Targets do not retaliate, and it may instead choose a normal attack. Damage resolves before the source is destroyed; Deflecting rolls separately for each point assigned. The cost is paid even if damage is negated."],
@@ -1733,7 +1753,7 @@
     [["focus"], "The copied attribute lasts until the next choice even if the source moves, upgrades, or is destroyed. Focus keeps its own name, rank, and colours and follows the copied attribute's normal restrictions and costs."],
     [["focus", "spectral", "lightning"], "Focus chooses no attribute automatically if it is disabled at the start of the turn. If changing or losing a copied health bonus reduces it to zero hit points, it is destroyed immediately; rechoosing the same health bonus can preserve it."],
     [["focus", "spectral", "amplifying"], "Copied Spectral and Amplifying effects expire at the start of their owner's next turn even if Focus chooses the same attribute again."],
-    [["growth"], "At the beginning of its owner's turn, Growth heals 1 damage if damaged; otherwise it gains 1 temporary hit point. Temporary hit points have no maximum and are lost before normal hit points."],
+    [["growth"], "At the beginning of its owner's turn, Growth heals 1 damage if damaged; otherwise it gains 1 temporary hit point. Temporary hit points have no maximum, are lost before normal hit points, and are removed when Growth is upgraded."],
     [["leech"], "Leech restores 1 damage once per positive combat hit it deals, whether attacking or retaliating, regardless of how many damage points the hit causes. Damage absorbed by temporary HP counts, but a hit reduced to zero does not. Leech must survive the full combat exchange to heal; it cannot regain lost temporary HP. Focus copying Leech follows the same rules."],
     [["martyr"], "Martyr uses its action from either row to destroy itself and refresh the action of another friendly rune that has already used an action this turn. Upgrading counts as using an action, but playing a rune does not. The refreshed action may be an attack, attribute, or upgrade; movement remains separate. Each Martyr can refresh an ally once, and multiple Martyrs may refresh the same ally again after it uses the refreshed action. The ally's normal restrictions still apply, including Frenzy's limit of two attacks per turn. Focus copying Martyr sacrifices Focus itself."],
     [["command"], "Command uses its action from either row to refresh another friendly rune's action after it has already used an action this turn. Upgrading counts as using an action, but playing a rune does not. The target may take one additional attack, attribute, or upgrade; movement remains separate. Command does not sacrifice itself. Each Command can refresh an ally once, and another Command may refresh that ally after it uses the granted action. Command can let Frenzy exceed its usual two-attack limit by one attack for each Command-granted action. Focus copying Command follows the same rules."],
@@ -1742,8 +1762,8 @@
     [["execution"], "Execution uses its normal attack action, which can only be made from the frontline. If the target's current HP is below its current maximum HP and it is not defending Intangible, destroy it immediately without normal combat damage or retaliation. Losing temporary HP alone does not qualify because it also lowers current maximum HP. Deflecting rolls as usual: a successful roll prevents Execution, while a failed roll leaves the target to be destroyed. Normal destruction effects still resolve. Focus copying Execution follows the same rules."],
     [["infusion", "intangible"], "Infusion uses its action from either row to give another friendly rune +2 attack until the start of its owner's next turn. It costs Infusion 1 HP, temporary HP first; it may spend its last HP and still resolve. Infusion bonuses stack and remain if Infusion leaves play or the target upgrades. The bonus applies while defending and even against defending Intangible. Focus copying Infusion follows the same rules."],
     [["guardian"], "Each enabled Guardian reduces each instance of damage dealt to a friendly backline rune by 1. Guardians stack with each other and Hardened, and reduction cannot lower damage below zero. This applies to combat, attributes, secondary hits, and returned deflection damage, but not HP costs paid by the rune's owner. Piercing and Piercing Major ignore Guardian's damage reduction."],
-    [["ambush"], "Ambush adds 1 to its attack damage against a rune marked as not acted. A rune that acted during its owner's turn remains marked as acted during the opponent's following turn; the state resets when its owner starts their next turn. Moving alone does not count as acting. This bonus is only for the attacker's damage, and defending Intangible ignores it."],
-    [["berserk"], "Berserk has +1 maximum HP and gains +1 attack for each damage marker currently on it. Healing removes a damage marker and its attack bonus; damage absorbed by temporary HP does not count. Focus copying Berserk gets the same HP and attack bonuses."],
+    [["ambush"], "Ambush always deals its normal attack damage. It adds 1 damage only when attacking a rune marked as not acted. A rune that acted during its owner's turn remains marked as acted during the opponent's following turn; the state resets when its owner starts their next turn. Moving alone does not count as acting. This bonus applies when attacking Intangible."],
+    [["berserk"], "Berserk has no HP bonus and gains +1 attack for each damage marker currently on it. Healing removes a damage marker and its attack bonus; damage absorbed by temporary HP does not count. Focus copying Berserk gains the attack bonus but no HP bonus."],
     [["frenzy"], "Frenzy can attack twice per turn by default. Its first attack uses its action, then one second attack is allowed without granting another upgrade or attribute action. Command can grant further attacks beyond this limit, one per Command-granted action. Upgrading or using an action instead of attacking prevents its attacks that turn; movement remains separate. The attack count resets at the start of its owner's turn."],
     [["snare"], "Snare uses an action from either row to target an eligible enemy rune in either row. The target cannot move or swap during its next turn, but may still attack, upgrade, and use attributes. The restriction ends when that turn ends; Intangible and a backline Cloak cannot be targeted."],
     [["phoenix"], "When Phoenix is destroyed, roll a six-sided die. On 4+, return its top card to its owner's hand instead of the destroyed pile. It can return from any kind of destruction."],
@@ -2214,6 +2234,30 @@
       ],
       lastGameId: "47b53bed1deeec0572073dbd9b69acd1"
     }
+  }, {
+    name: "Level 150",
+    model: {
+      schemaVersion: 1,
+      revision: 148,
+      games: 148,
+      wins: 42,
+      baseline: -0.6571002313957189,
+      weights: [
+        -0.08324466085233642,
+        -0.005404242420629905,
+        0.00917546051103448,
+        -0.0027528812435579568,
+        -0.09426561965378785,
+        -0.04758081133390227,
+        -0.14313566403219358,
+        0.35487508750859104,
+        -0.04127149334525369,
+        -0.021526217785371622,
+        0.01693855563000548,
+        -0.12335241319242018
+      ],
+      lastGameId: "80b8b1eaf15f8d1ca546948d4cf91156"
+    }
   }];
   function availableLearningOpponents(saved) {
     const options = prebuiltLearningOpponents.map((opponent) => ({
@@ -2294,6 +2338,19 @@
       const snapshot = { name: trimmed, model: checkpoint.model };
       storage.setItem(SNAPSHOT_STORAGE_KEY, JSON.stringify([...snapshots, snapshot]));
       return snapshot;
+    });
+  }
+  function deleteLearningSnapshot(storage, locks, name) {
+    if (typeof name !== "string" || !name.trim()) {
+      throw new Error("Enter a saved opponent name to delete.");
+    }
+    return withLock(locks, () => {
+      const snapshots = loadLearningSnapshots(storage);
+      const index = snapshots.findIndex((snapshot) => snapshot.name === name);
+      if (index === -1) throw new Error(`Saved opponent "${name}" was not found.`);
+      const [deleted] = snapshots.splice(index, 1);
+      storage.setItem(SNAPSHOT_STORAGE_KEY, JSON.stringify(snapshots));
+      return deleted;
     });
   }
   function commitLearningModel(storage, locks, expectedRaw, model) {
@@ -3380,8 +3437,32 @@
       valid = true;
       try {
         const snapshots = loadLearningSnapshots(window.localStorage);
-        $("snapshot-list").textContent = snapshots.length ? `Saved opponents: ${snapshots.map((snapshot) => `${snapshot.name} (${snapshot.model.games} games)`).join(", ")}` : "No saved opponents yet.";
-        if (raw === null) $("snapshot-list").textContent += " No saved Learning AI model is available to snapshot.";
+        const list = $("snapshot-list");
+        list.replaceChildren();
+        if (snapshots.length) {
+          for (const snapshot of snapshots) {
+            const entry = document.createElement("div");
+            entry.className = "snapshot-entry";
+            const label = document.createElement("span");
+            label.textContent = `${snapshot.name} (${snapshot.model.games} games)`;
+            const remove = document.createElement("button");
+            remove.className = "button secondary";
+            remove.type = "button";
+            remove.textContent = "Delete";
+            remove.setAttribute("aria-label", `Delete saved opponent ${snapshot.name}`);
+            remove.disabled = learningControlsLocked();
+            remove.addEventListener("click", () => {
+              void deleteSavedOpponent(snapshot.name);
+            });
+            entry.append(label, remove);
+            list.append(entry);
+          }
+        } else list.textContent = "No saved opponents yet.";
+        if (raw === null) {
+          const note = document.createElement("p");
+          note.textContent = "No saved Learning AI model is available to snapshot.";
+          list.append(note);
+        }
         canSnapshot = raw !== null;
       } catch (error) {
         $("snapshot-list").textContent = `Saved AI opponents unavailable: ${error.message}`;
@@ -3492,8 +3573,9 @@
       const saved = node("optgroup");
       saved.label = "Saved decks";
       for (const entry of savedDecks) {
-        const option = node("option", null, entry.name);
+        const option = node("option", null, entry.invalidReason ? `${entry.name} (unavailable: ${entry.invalidReason})` : entry.name);
         option.value = `saved:${entry.name}`;
+        option.disabled = select.id.startsWith("setup-deck-") && Boolean(entry.invalidReason);
         saved.append(option);
       }
       select.append(saved);
@@ -3525,13 +3607,17 @@
     let unavailableDeck = false;
     for (let player = 0; player < 2; player++) {
       const selected = setupDecks[player];
+      let invalidReason = "";
       if (selected.choice.startsWith("saved:")) {
         const saved = savedDecks.find((entry) => `saved:${entry.name}` === selected.choice);
-        if (saved) selected.deck = saved.deck.slice();
-        else unavailableDeck = true;
+        if (saved) {
+          selected.deck = saved.deck.slice();
+          invalidReason = saved.invalidReason || "";
+        } else unavailableDeck = true;
+        if (invalidReason) unavailableDeck = true;
       }
       fillDeckChoices($(`setup-deck-${player}`), selected.choice, customDecks[player]?.label, Boolean(customDecks[player]));
-      $(`setup-summary-${player}`).textContent = selected.choice === "random" ? "A prebuilt or saved deck will be chosen at the start." : `${selected.deck.length} cards \xB7 ${deckRank(selected.deck)}/${DECK_RANK_LIMIT} ranks`;
+      $(`setup-summary-${player}`).textContent = selected.choice === "random" ? "A prebuilt or saved deck will be chosen at the start." : `${selected.deck.length} cards \xB7 ${deckRank(selected.deck)}/${DECK_RANK_LIMIT} ranks${invalidReason ? ` \xB7 Unavailable: ${invalidReason}` : ""}`;
       $(`setup-edit-${player}`).disabled = selected.choice === "random";
     }
     const difficulty = $("ai-difficulty");
@@ -3572,7 +3658,7 @@
       }
     } else if (snapshotError) $("learning-setup-status").textContent = snapshotError;
     $("setup-start").disabled = randomUnavailable || unavailableDeck || learningUnavailable || learningBusy || Boolean(learningMatch?.saving);
-    $("setup-status").textContent = storageIssue + (randomUnavailable ? " Random selection requires access to saved decks." : "") + (unavailableDeck ? " A selected saved deck is unavailable; choose or edit a deck before starting." : "");
+    $("setup-status").textContent = storageIssue + (randomUnavailable ? " Random selection requires access to saved decks." : "") + (unavailableDeck ? " A selected saved deck is invalid or unavailable; edit it or choose a legal deck before starting." : "");
     $("setup-previous-ai-log").hidden = !aiLog;
   }
   function updateDeckEditor() {
@@ -3613,8 +3699,14 @@
     cardList.append(...tiles, $("deck-empty-results"));
     cardList.scrollTop = scrollTop;
     $("deck-empty-results").hidden = visibleCards > 0;
-    const valid = draftDeck.some((card) => card.rank === 1);
-    $("deck-validation").textContent = storageIssue || (valid ? "Deck is ready." : "A deck needs at least one rank 1 rune.");
+    let validationError = "";
+    try {
+      validateDeck(draftDeck);
+    } catch (error) {
+      validationError = error.message;
+    }
+    const valid = !validationError;
+    $("deck-validation").textContent = storageIssue || (valid ? "Deck is ready." : `${validationError} Make it legal before using or saving.`);
     $("deck-use").disabled = !valid;
     $("deck-save").disabled = !valid || Boolean(storageIssue);
     $("deck-delete").disabled = Boolean(storageIssue) || !$("deck-load").value.startsWith("saved:");
@@ -4286,7 +4378,7 @@
             rune.acted ? "availability-used" : "availability-ready",
             rune.acted ? "ACTED \u2713" : "NOT ACTED \u25CB"
           );
-          acted.title = rune.acted ? "This rune has acted this turn; Ambush gets no bonus when attacking it." : "This rune has not acted this turn; Ambush gets +1 damage when attacking it, unless it is defending Intangible.";
+          acted.title = rune.acted ? "This rune has acted this turn; Ambush deals normal attack damage with no +1 bonus." : "This rune has not acted this turn; Ambush gets +1 damage when attacking it.";
           status.append(acted);
         }
         if (frenzyAttacks !== null) {
@@ -4930,6 +5022,23 @@
       refreshLearningSettings();
     }
   }
+  async function deleteSavedOpponent(name) {
+    if (learningControlsLocked()) return;
+    if (!window.confirm(`Delete the saved AI opponent "${name}"?`)) return;
+    learningBusy = true;
+    refreshLearningSettings();
+    try {
+      learningAvailable();
+      const deleted = await deleteLearningSnapshot(window.localStorage, navigator.locks, name);
+      learningStatus = `Deleted saved opponent "${deleted.name}".`;
+    } catch (error) {
+      learningStatus = `Saved opponent was not deleted: ${error.message}`;
+      console.error("Could not delete saved AI opponent:", error);
+    } finally {
+      learningBusy = false;
+      refreshLearningSettings();
+    }
+  }
   function openDeckEditor(origin, player = 0) {
     editorOrigin = origin;
     editingPlayer = player;
@@ -5218,6 +5327,10 @@
     scheduleAiTurn();
   });
   $("victory-close").addEventListener("click", () => $("victory-dialog").close());
+  $("victory-menu").addEventListener("click", () => {
+    $("victory-dialog").close();
+    showMenu();
+  });
   function startNextRound() {
     if (game.winner !== "draw") return;
     const previousPlayer = gameMode === "local" && game.drawReason === "agreement" ? 1 - game.currentPlayer : game.currentPlayer;
