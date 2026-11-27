@@ -6,7 +6,7 @@ The JavaScript engine in `src/engine.js` models two players' hands, a 4-, 6-, or
 
 The catalog in `src/cards.js` contains all 47 playable card designs, including Focus, the four Rank 1 expansion runes, the first eight Rank 2 expansion runes, Berserk, Execution, Infusion, Command, and Transpose, with their original artwork paths and implemented attributes. Uprising stats require its owner as the second argument to `getRuneStats`. The engine rejects unsupported attributes rather than silently ignoring them.
 
-Execution (Rank 4) uses a normal attack from the frontline: if the target's current HP is below its current maximum HP and it is not Intangible, it is destroyed without retaliation. Losing temporary HP alone does not make a target wounded; a successful Deflecting roll prevents Execution.
+Execution (Rank 4) uses a normal attack from the frontline: if the target's current HP is below its current maximum HP and it is not Intangible, it is destroyed without retaliation, and Execution takes 1 damage. Losing temporary HP alone does not make a target wounded; a successful Deflecting roll prevents Execution and its damage cost.
 
 Transpose (Rank 3) uses an action from the frontline to swap two eligible opposing runes chosen by its controller. Both positions must be legal; a backline rune needs its corresponding frontline occupied unless it is Phantom. Intangible and backline Cloak cannot be selected. Transpose ignores Snare and does not consume either target's normal movement.
 
