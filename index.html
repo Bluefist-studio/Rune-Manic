@@ -17,13 +17,14 @@
       <div id="turn-display" class="turn-display">
         <span id="turn-label"></span>
         <strong id="player-label"></strong>
+        <span id="no-progress-mobile" class="no-progress-mobile" aria-live="polite" aria-atomic="true" hidden></span>
       </div>
       <button id="open-menu" class="button secondary" type="button">Menu</button>
     </header>
 
     <div id="game-layout" class="layout">
-      <aside class="help-sidebar">
-        <section class="panel history-panel" aria-labelledby="history-title">
+      <aside id="help-sidebar" class="help-sidebar">
+        <section id="history-panel" class="panel history-panel" aria-labelledby="history-title">
           <h2 id="history-title">Action history</h2>
           <div id="history-scroll" class="history-scroll" tabindex="0" aria-label="Action history, scroll for earlier actions">
             <ol id="action-history" role="log" aria-live="polite" aria-relevant="additions"></ol>
@@ -44,6 +45,7 @@
             <button id="wheel-move" class="wheel-option wheel-move" type="button">Move</button>
             <button id="wheel-attack" class="wheel-option wheel-attack" type="button">Attack</button>
             <button id="wheel-attribute" class="wheel-option wheel-attribute" type="button">Attribute</button>
+            <button id="wheel-details" class="wheel-option wheel-details" type="button">Details</button>
             <button id="wheel-cancel" class="wheel-cancel" type="button" aria-label="Cancel selection">×</button>
           </div>
           <div class="board-heading"><span id="opponent-label"></span><span id="opponent-hand-count" aria-live="polite" aria-atomic="true"></span></div>
@@ -151,6 +153,14 @@
       <button id="confirm-draw" class="button primary" type="button">Offer draw</button>
     </div>
   </dialog>
+  <dialog id="new-game-confirm-dialog" aria-labelledby="new-game-confirm-title" aria-describedby="new-game-confirm-message">
+    <div class="masterful-card">
+      <h2 id="new-game-confirm-title">Start a new game?</h2>
+      <p id="new-game-confirm-message"></p>
+      <button id="new-game-confirm-cancel" class="button secondary" type="button" autofocus>Cancel</button>
+      <button id="new-game-confirm" class="button primary" type="button">Start new game</button>
+    </div>
+  </dialog>
   <dialog id="ai-draw-response-dialog" aria-labelledby="ai-draw-response-title" aria-describedby="ai-draw-response-message">
     <div class="masterful-card">
       <p class="eyebrow">DRAW OFFER</p>
@@ -215,7 +225,22 @@
         <button id="menu-learning" class="button secondary" type="button">Learning AI settings</button>
         <button id="menu-resume" class="button secondary" type="button" hidden>Resume game</button>
       </div>
+      <div class="menu-mobile-actions" aria-label="In-game options">
+        <button id="menu-history" class="button secondary" type="button">Action history</button>
+        <button id="menu-help" class="button secondary" type="button">How to play</button>
+        <button id="menu-offer-draw" class="button secondary" type="button">Offer draw</button>
+        <button id="menu-concede" class="button secondary" type="button">Concede</button>
+      </div>
       <p id="menu-storage-status" class="form-status" role="status"></p>
+    </div>
+  </dialog>
+  <dialog id="history-dialog" aria-labelledby="history-dialog-title">
+    <div class="history-dialog-card">
+      <header class="rune-info-header">
+        <h2 id="history-dialog-title">Action history</h2>
+        <button id="history-close" class="button secondary" type="button" autofocus>Back to menu</button>
+      </header>
+      <div id="history-dialog-content"></div>
     </div>
   </dialog>
   <dialog id="setup-dialog" aria-labelledby="setup-title">
@@ -306,6 +331,18 @@
       <div id="rune-info-content" class="rune-info-content"></div>
     </div>
   </dialog>
+  <dialog id="rune-detail-dialog" aria-labelledby="rune-detail-title">
+    <div class="rune-info">
+      <header class="rune-info-header">
+        <div>
+          <p class="eyebrow">RUNE DETAILS</p>
+          <h2 id="rune-detail-title">Selected rune</h2>
+        </div>
+        <button id="rune-detail-close" class="button secondary" type="button" autofocus>Close</button>
+      </header>
+      <div id="rune-detail-content" class="rune-info-content"></div>
+    </div>
+  </dialog>
   <dialog id="deck-dialog" aria-labelledby="deck-title" aria-describedby="deck-instructions">
     <div class="deck-editor">
       <header class="deck-header">
@@ -322,27 +359,30 @@
         <button id="deck-clear" class="button secondary" type="button">Clear deck</button>
         <button id="deck-generate" class="button secondary" type="button">Generate random deck</button>
       </div>
-      <div id="deck-browse-controls" class="deck-browse-controls">
-        <label class="deck-sort-control" for="deck-sort">Sort by
-          <select id="deck-sort">
-            <option value="name">Name A–Z</option>
-            <option value="rank-asc" selected>Rank: low to high</option>
-            <option value="rank-desc">Rank: high to low</option>
-          </select>
-        </label>
-        <fieldset class="deck-filter-group">
-          <legend>Rank (any)</legend>
-          <div id="deck-rank-filters" class="deck-filter-options"></div>
-        </fieldset>
-        <fieldset class="deck-filter-group">
-          <legend>Color (any)</legend>
-          <div id="deck-color-filters" class="deck-filter-options"></div>
-        </fieldset>
-        <label class="deck-show-current">
-          <input id="deck-in-deck-filter" type="checkbox">
-          In current deck only
-        </label>
-      </div>
+      <details id="deck-browse-details" class="deck-browse-details" open>
+        <summary>Sort and filter runes</summary>
+        <div id="deck-browse-controls" class="deck-browse-controls">
+          <label class="deck-sort-control" for="deck-sort">Sort by
+            <select id="deck-sort">
+              <option value="name">Name A–Z</option>
+              <option value="rank-asc" selected>Rank: low to high</option>
+              <option value="rank-desc">Rank: high to low</option>
+            </select>
+          </label>
+          <fieldset class="deck-filter-group">
+            <legend>Rank (any)</legend>
+            <div id="deck-rank-filters" class="deck-filter-options"></div>
+          </fieldset>
+          <fieldset class="deck-filter-group">
+            <legend>Color (any)</legend>
+            <div id="deck-color-filters" class="deck-filter-options"></div>
+          </fieldset>
+          <label class="deck-show-current">
+            <input id="deck-in-deck-filter" type="checkbox">
+            In current deck only
+          </label>
+        </div>
+      </details>
       <p id="deck-status" aria-live="polite"></p>
       <details id="deck-text-section" class="deck-text">
         <summary>Import / export text deck list</summary>

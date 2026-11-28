@@ -28,7 +28,7 @@ Choose who goes first in game setup. The default is **Random**, which chooses ei
 
 The experimental first-turn upgrade rule is enabled by default: the player going second may upgrade each newly played rune once on their first turn, but those runes cannot attack or use an active attribute. To restore the original rule, set `ALLOW_SECOND_PLAYER_FIRST_TURN_UPGRADE` to `false` in `src/engine.js`, run `npm run build`, and refresh the game. Set it back to `true` and rebuild to enable the variant again.
 
-Choose **Concede** in the turn panel and confirm to end the game and award the win to the opponent. In local play, the current player concedes; against the AI, Player 1 can concede even on the AI's turn. A concession in a Learning game counts as a completed loss for Player 1.
+Choose **Concede** in the turn panel, or in the mobile menu, and confirm to end the game and award the win to the opponent. In local play, the current player concedes; against the AI, Player 1 can concede even on the AI's turn. A concession in a Learning game counts as a completed loss for Player 1.
 
 The experimental **Learning** difficulty explores legal actions and adjusts a small set of strategic weights after each completed game against it. Its model remains fixed during a game; abandoned games, Basic games and local two-player games do not train it. All AI opponents skip moves they can identify as equivalent to staying put, while preserving tactically different moves. Learning favors staying put over needless repositioning, balancing movement choices against other actions rather than treating every possible move as a separate reason to move. It still explores potentially useful moves. Wins and losses are noisy, so it may play worse after an update and improvement is not guaranteed. Learning requires a current desktop browser with local storage and cross-tab coordination support.
 
@@ -48,6 +48,8 @@ In the deck builder, open **Import / export text deck list** to copy the current
 
 Matching cards in the hand overlap in a stack, with the top card selectable and the number of copies shown. Select a hand card and a highlighted position, or drag the card onto that position, to play or upgrade. Drag a friendly rune to a highlighted friendly position to move or swap it. Alternatively, select a friendly rune to open its action wheel on the card, then choose Move, Attack, or Attribute and a highlighted target; the sidebar buttons remain available. The wheel's center X cancels the selection. For Masterful, Bolt and Double Bolt, choose how many hit points to trade in the pop-up, then select an enemy once for each damage point; select the same enemy repeatedly to assign it multiple points. Use **Undo last target** to revise an unfinished selection. Bolt and Double Bolt can use their attribute from either row, and resolve all damage assigned to each target as one hit; Masterful resolves each point as a separate hit. Trading the last hit point destroys the rune. Leech restores 1 HP once per positive combat hit it deals, whether attacking or retaliating; damage to temporary HP counts, and Leech must survive the full exchange to heal. Martyr uses its action from either row to sacrifice itself and refresh an ally that already used an action this turn; upgrading counts, but playing does not, and movement remains separate. Recall uses an action from either row to return another friendly rune from either row, with its full upgrade stack, to your hand; a vacated frontline promotes its backline. Snare uses an action from either row to prevent an eligible enemy from moving or swapping during its next turn; it does not prevent other actions. Splinter automatically damages other enemy runes when it deals damage in combat, whether attacking or defending. Amplifying gives another friendly rune +1 attack until its owner's next turn; multiple bonuses stack. Soulbind uses an action from either row to protect another friendly rune until its next turn; its defenses apply first, then any HP loss (including ability costs) is redirected to Soulbind without overflow. Only one Soulbind can protect a rune at a time, and the newest link replaces the previous one. For Acid, select the required distinct targets; selecting a target again removes it, and the attribute resolves when all targets are chosen. For Fire Ball, select the main target; all other enemy runes are hit automatically. Deflecting rolls automatically when attacked or hit by a damaging attribute; the result appears in the action message. Lightning deals normal combat damage and disables the opposing rune through the end of its next full turn when attacking or defending; a successful deflection against its attack prevents both damage and disable, and Intangible is immune. Frontline Spectral can disable an enemy until its owner's next turn, unless Spectral is destroyed, upgraded or moved to the backline; Intangible is immune. Disabled runes cannot move, swap, upgrade or act, but retain their defensive effects. Soul heals damage before gaining temporary health, which absorbs damage first and cannot be restored once lost. A surviving, enabled Necrotic automatically rolls when another friendly rune is destroyed; on 3+ it adds a Haunting rune to its owner's hand. End turn passes the device to the other player. You may inspect an opponent's rune by selecting it.
 
+To inspect rune details, select a rune and choose **Details** on its action wheel. The modal shows the rune's current stats and effects, including for an opponent's rune.
+
 The hand defaults to sorting by rank. Use **Sort** to switch between rank and color order. Color order groups runes by their complete color combination, with ranks ascending within each group; multicolor runes appear once, not once per color.
 
 The opponent's remaining hand count is shown above their battlefield without revealing their cards.
@@ -62,7 +64,7 @@ The battlefield and hand adapt to the desktop window's height; the side panels s
 
 After four consecutive turns without meaningful progress, the round is a draw. Playing, upgrading, damaging, healing or destroying a rune, or changing an attribute status (including an effect expiring at a turn change), resets the counter. Movement alone and actions that have no effect do not.
 
-On your turn, choose **Offer draw** in the turn panel and confirm to ask the opponent to accept or decline. In local play, pass the device while the current hand is hidden; a declined offer returns to the same turn. The AI accepts when its board evaluation is no better than its opponent's, after both players have completed a turn.
+On your turn, choose **Offer draw** in the turn panel, or in the mobile menu, and confirm to ask the opponent to accept or decline. In local play, pass the device while the current hand is hidden; a declined offer returns to the same turn. The AI accepts when its board evaluation is no better than its opponent's, after both players have completed a turn.
 
 On your runes, ○ means movement or action is available; ✓ means it has already been used this turn. Newly played runes have already used their action, except that an eligible second-player first-turn upgrade is shown as **UPGRADE ○**.
 
@@ -76,9 +78,9 @@ At the start of its owner's turn, Focus chooses a friendly non-Focus rune's attr
 
 Select a rune in the hand or battlefield and choose **More info** in Rune Details to see its clarified rules and interactions. Focus also shows the rules for its currently copied attribute. The panel includes expandable general game rules.
 
-Choose **?** in the top-right corner of the turn panel for a quick guide during a game.
+On mobile, double-tap a hand rune to open Rune Details, and touch-drag cards or battlefield runes to glowing legal spaces to play, upgrade, move, or attack. Scrollable areas hide scrollbar chrome to save space but remain scrollable. Open **Menu** → **How to play** for the guide; the **?** shortcut is desktop-only.
 
-After a game ends, choose **New game** on the result screen to go directly to setup, or **View battlefield** to inspect the result. Setup offers the current AI log for download before it is replaced. Starting a new game after a finished round only requires confirmation if a learning update is unsaved; replacing an unfinished game still asks for confirmation.
+After a game ends, choose **New game** on the result screen to go directly to setup, or **View battlefield** to inspect the result. Setup offers the current AI log for download before it is replaced. Starting a new game after a finished round only requires confirmation if a learning update is unsaved; replacing an unfinished game opens an in-game confirmation modal.
 
 Transmute can upgrade any rank 1 rune, regardless of colour, and can itself be upgraded to any rank 3 rune. Upgrades must still advance exactly one rank.
 
@@ -93,3 +95,16 @@ For development, run the tests and rebuild the browser bundle with Node.js:
 npm test
 npm run build
 ```
+
+## Build an Android APK
+
+The Android app is a portrait-locked Capacitor wrapper and bundles the web app and its card artwork for offline play. Install Node.js 22 or newer, JDK 17 or newer, and Android SDK Platform 36; configure `JAVA_HOME` and `ANDROID_HOME` (or `ANDROID_SDK_ROOT`) before building.
+
+Run:
+
+```text
+npm install
+npm run build:apk
+```
+
+The debug APK is written to `android/app/build/outputs/apk/debug/app-debug.apk`. It can be installed directly for testing; publishing requires a signed release build.
